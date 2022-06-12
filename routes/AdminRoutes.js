@@ -16,10 +16,8 @@ const adminControlloer = require('./../controllers/AdminController')
 router.get('/', (req, res)=>{
     res.send("Wellcome to admin api")
 })
-router.post('/postJob', (req, res)=>{
-    adminControlloer.postJob(req, res);
-    
-})
+router.post('/postJob', (req, res)=>adminControlloer.postJob(req, res))
+router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res))
 router.post('/upload', upload.single('file'), (req, res)=>{
     adminControlloer.upload(req, res)
 } )

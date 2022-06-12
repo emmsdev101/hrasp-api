@@ -34,6 +34,19 @@ exports.postJob = (req, res)=>{
         console.log(postData)
     })
 }
+exports.getJobPosts = (req, res)=>{
+    const sql = "SELECT * FROM job_posts"
+
+    con.query(sql,(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+            throw err
+        }
+
+        res.send(result)
+    })
+}
+
 exports.upload = (req, res)=>{
     if(!req.file){
         res.sendStatus(500)
