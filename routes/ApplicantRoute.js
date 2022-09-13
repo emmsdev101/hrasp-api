@@ -1,15 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-var multer = require('multer');
-
-var storage = multer.diskStorage({
-    destination: 'uploads/applicant',
-    filename: function(req, file, callback) {
-      callback(null, file.originalname);
-    }
-  });
-  var upload = multer({ storage: storage })
+const uploader = require('./../helper/uploader')
 
 const applicantController = require('./../controllers/ApplicantController')
 
@@ -17,6 +9,15 @@ router.get('/', (req, res)=>{
     res.send("Wellcome to appliant api")
 })
 
-router.post('/upload', upload.single('file'), (req, res)=>applicantController.upload(req, res))
+router.post('/upload-letter', uploader.upload('uploads/applicant/letters').single("file"),(req,res)=>uploader.getPathSingle(req, res))
+router.post('/upload-tor', uploader.upload('uploads/applicant/tor').single("file"),(req,res)=>uploader.getPathSingle(req, res))
+router.post('/upload-pds', uploader.upload('uploads/applicant/pds').single("file"),(req,res)=>uploader.getPathSingle(req, res))
+router.post('/upload-certs', uploader.upload('uploads/applicant/certs').array("files"),(req,res)=>uploader.getPathArray(req, res))
+
+router.post('/apply',(req, res)=>{
+  applicantController.apply(req, res)
+})
+
 router.post("/register", (req, res)=>applicantController.register(req, res))
+router.post("/login", (req, res)=>applicantController.login(req, res))
 module.exports = router
