@@ -6,7 +6,7 @@ const uploader = require('./../helper/uploader')
 const applicantController = require('./../controllers/ApplicantController')
 
 router.get('/', (req, res)=>{
-    res.send("Wellcome to appliant api")
+    res.send("Wellcome")
 })
 
 router.post('/upload-letter', uploader.upload('uploads/applicant/letters').single("file"),(req,res)=>uploader.getPathSingle(req, res))

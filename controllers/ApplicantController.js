@@ -62,7 +62,7 @@ exports.login = (req, res)=>{
     const email = req.body.email
     const password = req.body.password
 
-    con.query("SELECT id, email, password from accounts WHERE email=?", email,(err, result)=>{
+    con.query("SELECT id, email, password from accounts WHERE email=? AND type = 'applicant'", email,(err, result)=>{
         if(err){
             res.sendStatus(500)
             throw err
@@ -77,6 +77,7 @@ exports.login = (req, res)=>{
         const data = result[0]
         if(data.password === password){
             req.session.accountId=data.id
+            req.session.type = "applicant"
             req.session.save()
             res.send({status:"success"})
         }

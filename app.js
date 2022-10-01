@@ -9,7 +9,7 @@ const conn = require("./config/DbConnection").con;
 
 const PORT = 4000;
 
-const auth = require("./helper/auth");
+const {auth, authAdmin, authApplicant} = require("./helper/auth");
 const adminRoute = require("./routes/AdminRoutes");
 const applicantRoute = require("./routes/ApplicantRoute");
 
@@ -30,13 +30,12 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.use("/", auth.auth);
-
+app.use("/admin", authAdmin)
+app.use("/applicant", authApplicant)
 app.use("/uploads", express.static(path.join(__dirname, "uploads/")));
 
 app.use("/admin", adminRoute);
 app.use("/applicant", applicantRoute);
-
 
 app.listen(PORT, () => {
   console.log("Server is listening at port: " + PORT);
