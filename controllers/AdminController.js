@@ -1,4 +1,4 @@
-const dbConnection = require('./../config/DbConnection')
+const dbConnection = require('../config/DbConnection')
 const con = dbConnection.con
 
 exports.postJob = (req, res)=>{
@@ -30,7 +30,7 @@ exports.postJob = (req, res)=>{
         }
         console.log(result)
         res.sendStatus(200)
-
+ 
         console.log(postData)
     })
 }
@@ -55,4 +55,31 @@ exports.upload = (req, res)=>{
     const filePath = req.file.path
     console.log(filePath)
     res.send(filePath)
+}
+exports.login = (req, res)=>{
+    const email = req.body.username
+    const password = req.body.password
+
+    con.query("SELECT id, email, password from accounts WHERE email=? AND type = 'admin'", email,(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+            throw err
+        }
+        if(result.length === 0){
+            res.send({
+                status:"wrong-email"
+            })
+            console.log("Wrong email")
+            return 0
+        }
+        const data = result[0]
+        if(data.password === password){
+            req.session.accountId=data.id
+            req.session.type = "admin"
+            req.session.save()
+            res.send({status:"success"})
+        }
+        else res.send({status:"wrong-password"})
+    })
+    
 }
