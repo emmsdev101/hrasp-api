@@ -59,6 +59,7 @@ exports.upload = (req, res)=>{
 exports.login = (req, res)=>{
     const email = req.body.username
     const password = req.body.password
+    console.log(req.body)
 
     con.query("SELECT id, email, password from accounts WHERE email=? AND type = 'admin'", email,(err, result)=>{
         if(err){
@@ -82,4 +83,7 @@ exports.login = (req, res)=>{
         else res.send({status:"wrong-password"})
     })
     
+}
+exports.getApplicants = (req, res) => {
+    let sql = "SELECT applicant_id,  FROM applicantions"
 }
