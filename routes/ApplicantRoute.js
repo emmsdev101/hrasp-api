@@ -4,10 +4,13 @@ const router = express.Router()
 const uploader = require('./../helper/uploader')
 
 const applicantController = require('./../controllers/ApplicantController')
+const adminControlloer = require("./../controllers/AdminController")
 
 router.get('/', (req, res)=>{
     res.send("Wellcome")
 })
+
+router.get("/getJobPosts", adminControlloer.getJobPosts)
 
 router.post('/upload-letter', uploader.upload('uploads/applicant/letters').single("file"),(req,res)=>uploader.getPathSingle(req, res))
 router.post('/upload-tor', uploader.upload('uploads/applicant/tor').single("file"),(req,res)=>uploader.getPathSingle(req, res))

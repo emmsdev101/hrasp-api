@@ -59,7 +59,7 @@ exports.upload = (req, res)=>{
 exports.login = (req, res)=>{
     const email = req.body.username
     const password = req.body.password
-    console.log(req.body)
+    console.log("REquest body",req.body)
 
     con.query("SELECT id, email, password from accounts WHERE email=? AND type = 'admin'", email,(err, result)=>{
         if(err){
@@ -85,5 +85,15 @@ exports.login = (req, res)=>{
     
 }
 exports.getApplicants = (req, res) => {
-    let sql = "SELECT applicant_id,  FROM applicantions"
+    let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "
+    
+    con.query(sql, (err, result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        res.send(result)
+        console.log(result)
+    })
+
 }

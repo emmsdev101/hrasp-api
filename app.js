@@ -12,6 +12,7 @@ const PORT = 4000;
 const {auth, authAdmin, authApplicant} = require("./helper/auth");
 const adminRoute = require("./routes/AdminRoutes");
 const applicantRoute = require("./routes/ApplicantRoute");
+const noAuthRoute = require("./routes/NoAuthRoutes")
 
 app.use(cors({ origin: "http://localhost:3000", credentials:true}));
 app.use(
@@ -32,10 +33,12 @@ app.use(bodyParser.json());
 
 app.use("/admin", authAdmin)
 app.use("/applicant", authApplicant)
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads/")));
 
 app.use("/admin", adminRoute);
 app.use("/applicant", applicantRoute);
+app.use("/", noAuthRoute)
 
 app.listen(PORT, () => {
   console.log("Server is listening at port: " + PORT);
