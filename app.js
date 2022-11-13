@@ -14,7 +14,7 @@ const adminRoute = require("./routes/AdminRoutes");
 const applicantRoute = require("./routes/ApplicantRoute");
 const noAuthRoute = require("./routes/NoAuthRoutes")
 
-app.use(cors({ origin: "http://localhost:3000", credentials:true}));
+app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.103:3000"], credentials:true}));
 app.use(
   session({
     secret: "emms",

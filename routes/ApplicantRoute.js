@@ -13,8 +13,8 @@ router.get('/', (req, res)=>{
 router.get("/getJobPosts", adminControlloer.getJobPosts)
 
 router.post('/upload-letter', uploader.upload('uploads/applicant/letters').single("file"),(req,res)=>uploader.getPathSingle(req, res))
-router.post('/upload-tor', uploader.upload('uploads/applicant/tor').single("file"),(req,res)=>uploader.getPathSingle(req, res))
-router.post('/upload-pds', uploader.upload('uploads/applicant/pds').single("file"),(req,res)=>uploader.getPathSingle(req, res))
+router.post('/upload-tor', uploader.upload('uploads/applicant/tor').array("files"),(req,res)=>uploader.getPathArray(req, res))
+router.post('/upload-pds', uploader.upload('uploads/applicant/pds').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-certs', uploader.upload('uploads/applicant/certs').array("files"),(req,res)=>uploader.getPathArray(req, res))
 
 router.post('/apply',(req, res)=>{
@@ -23,4 +23,6 @@ router.post('/apply',(req, res)=>{
 
 router.post("/register", (req, res)=>applicantController.register(req, res))
 router.post("/login", (req, res)=>applicantController.login(req, res))
+router.get("/getApplication", (req, res)=>applicantController.getApplication(req, res))
+
 module.exports = router

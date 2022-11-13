@@ -85,7 +85,10 @@ exports.login = (req, res)=>{
     
 }
 exports.getApplicants = (req, res) => {
-    let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "
+    const status = req.params.status === "all"?"":req.params.status 
+    console.log(status)
+    let q = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "
+    let sql =status? q+" WHERE status = '" + status+"'": q 
     
     con.query(sql, (err, result)=>{
         if(err){
@@ -93,7 +96,33 @@ exports.getApplicants = (req, res) => {
             return res.sendStatus(500)
         }
         res.send(result)
-        console.log(result)
     })
 
+}
+exports.acceptApplication = (req, res) => {
+    let sql = "UPDATE applications SET status = ? WHERE id = ?"
+
+    const id = req.body.id
+    const status = req.body.status
+    console.log("id and status", {id, status})
+    $stmt = con.query(sql, [status, id],(err, result)=>{
+        if(err){
+            return res.sendStatus(500)
+        }
+        console.log(result)
+        res.send(true)
+    })
+}
+exports.getApplicationDetails = (req, res) =>{
+    let sql = "SELECT * FROM applications where id = ?"
+    
+    const applicant = req.params.id
+    console.log("id ",applicant)
+    con.query(sql, applicant, (err, result)=>{
+        if(err){
+            return res.sendStatus(500)
+        }
+        console.log(result)
+        res.send(result[0])
+    })
 }

@@ -14,8 +14,11 @@ router.post('/postJob', (req, res)=>adminControlloer.postJob(req, res))
 router.post('/upload', uploader.upload('uploads/admin/images/jobPosts').single('file'), (req, res)=>{
     adminControlloer.upload(req, res)
 } )
+router.post("/acceptApplication", adminControlloer.acceptApplication)
+
 
 router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res))
-router.get("/getApplicants", adminControlloer.getApplicants)
+router.get("/getApplicants/:status", adminControlloer.getApplicants)
+router.get("/getApplicationDetails/:id", adminControlloer.getApplicationDetails)
 
 module.exports = router

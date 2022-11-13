@@ -90,11 +90,18 @@ exports.apply = (req, res)=>{
     const certPaths = {
         certificates:req.body.certs
     }
+    const psdPaths = {
+        pds:req.body.pds
+    }
+    const torPaths = {
+        tors:req.body.tor
+    }
+
     const appicationData = {
         applicant_id : req.session.accountId,
         letter : req.body.letter,
-        pds : req.body.pds,
-        tor : req.body.tor,
+        pds : JSON.stringify(psdPaths),
+        tor : JSON.stringify(torPaths),
         certificates : JSON.stringify(certPaths),
         job_id : req.body.jobId
     }
@@ -110,7 +117,21 @@ exports.apply = (req, res)=>{
 
         console.log(appicationData)
     })
+}
+exports.getApplication = (req, res)=>{
+    const applicant_id = req.session.accountId
 
+    console.log(applicant_id)
+    let sql = "SELECT applications.status, job_posts.title, job_posts.jobtype from applications INNER JOIN job_posts ON applications.job_id = job_posts.id WHERE applicant_id = ?"
+    con.query(sql, applicant_id, (err, result)=>{
+        if(err)return res.sendStatus(500)
+        if(result.length===0)return res.send("")
+        console.log("Application",result)
+        res.send(result[0])
 
+        
+
+        
+    })
 
 }
