@@ -86,10 +86,13 @@ exports.login = (req, res)=>{
 }
 exports.getApplicants = (req, res) => {
     const status = req.params.status === "all"?"":req.params.status 
+
+    let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "    
+
+    if(status === "to-interview"){
+        sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
+    }else sql = status?sql+" WHERE status ='"+status+"'":sql
     console.log(status)
-    let q = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "
-    let sql =status? q+" WHERE status = '" + status+"'": q 
-    
     con.query(sql, (err, result)=>{
         if(err){
             console.log(err)
@@ -124,5 +127,32 @@ exports.getApplicationDetails = (req, res) =>{
         }
         console.log(result)
         res.send(result[0])
+    })
+}
+
+exports.setSchedule = (req, res) => {
+    const application_id = req.body.application_id
+    const date = req.body.date
+    const time = req.body.time
+
+    let sql = "INSERT INTO interview (application_id, date, time) VALUES(?,?,?)"
+
+    con.query(sql, [application_id, date, time],(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+
+        }
+        sql = "UPDATE applications SET status = 'to-interview' WHERE id=?"
+        con.query(sql, application_id,(err, result)=>{
+            if(err){
+                console.log(err)
+                return res.sendStatus(500)
+            }
+            console.log(result)
+            console.log(req.body)
+            res.send("ok")
+        })
+        
+
     })
 }

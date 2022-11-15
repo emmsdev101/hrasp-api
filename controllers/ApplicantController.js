@@ -96,10 +96,13 @@ exports.apply = (req, res)=>{
     const torPaths = {
         tors:req.body.tor
     }
+    const letterPaths = {
+        letter:req.body.letter
+    }
 
     const appicationData = {
         applicant_id : req.session.accountId,
-        letter : req.body.letter,
+        letter : JSON.stringify(letterPaths),
         pds : JSON.stringify(psdPaths),
         tor : JSON.stringify(torPaths),
         certificates : JSON.stringify(certPaths),

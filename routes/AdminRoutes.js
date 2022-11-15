@@ -20,5 +20,6 @@ router.post("/acceptApplication", adminControlloer.acceptApplication)
 router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res))
 router.get("/getApplicants/:status", adminControlloer.getApplicants)
 router.get("/getApplicationDetails/:id", adminControlloer.getApplicationDetails)
+router.post('/setSchedule', adminControlloer.setSchedule)
 
 module.exports = router

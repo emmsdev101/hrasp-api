@@ -15,7 +15,7 @@ exports.authAdmin = (req, res, next)=>{
 }
 exports.authApplicant = (req, res, next)=>{
     console.log("user type",req.session.type)
-    if(req.path === "/set" || req.path === "/login")return next()
+    if(req.path === "/set" || req.path === "/login" || req.path === "/register")return next()
     if(req.session.type!=="applicant" || !req.session.accountId)return res.sendStatus(403)
     next()
 }
