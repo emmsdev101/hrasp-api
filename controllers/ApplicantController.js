@@ -130,11 +130,22 @@ exports.getApplication = (req, res)=>{
         if(err)return res.sendStatus(500)
         if(result.length===0)return res.send("")
         console.log("Application",result)
-        res.send(result[0])
+        res.send(result)
 
         
 
         
     })
 
+}
+exports.getSchedule = (req, res) => {
+    const applicant_id = req.session.accountId
+    let sql = "SELECT date_format(date,'%m-%d-%Y')as date, time FROM interview INNER JOIN applications ON interview.application_id = applications.id WHERE applications.applicant_id=?"
+    con.query(sql, applicant_id, (err, result)=>{
+        if(err){
+            console.log(err)
+            res.sendStatus(500)
+        }
+        res.send(result[0])
+    })
 }

@@ -92,7 +92,6 @@ exports.getApplicants = (req, res) => {
     if(status === "to-interview"){
         sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
     }else sql = status?sql+" WHERE status ='"+status+"'":sql
-    console.log(status)
     con.query(sql, (err, result)=>{
         if(err){
             console.log(err)

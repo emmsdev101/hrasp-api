@@ -24,5 +24,6 @@ router.post('/apply',(req, res)=>{
 router.post("/register", (req, res)=>applicantController.register(req, res))
 router.post("/login", (req, res)=>applicantController.login(req, res))
 router.get("/getApplication", (req, res)=>applicantController.getApplication(req, res))
+router.get("/getSchedule", (req, res)=>applicantController.getSchedule(req, res))
 
 module.exports = router
