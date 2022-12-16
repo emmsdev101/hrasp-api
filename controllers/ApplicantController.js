@@ -78,8 +78,9 @@ exports.login = (req, res)=>{
         if(data.password === password){
             req.session.accountId=data.id
             req.session.type = "applicant"
-            req.session.save()
-            res.send({status:"success"})
+            req.session.save(()=>{
+                res.send({status:"success"})
+            })
         }
         else res.send({status:"wrong-password"})
     })

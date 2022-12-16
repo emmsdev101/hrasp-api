@@ -13,12 +13,14 @@ const {auth, authAdmin, authApplicant} = require("./helper/auth");
 const adminRoute = require("./routes/AdminRoutes");
 const applicantRoute = require("./routes/ApplicantRoute");
 const noAuthRoute = require("./routes/NoAuthRoutes")
+const oneDay = 1000 * 60 * 60 * 24;
 
 app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.103:3000"], credentials:true}));
 app.use(
   session({
     secret: "emms",
-    resave: true,
+    resave: false,
+    cookie: { maxAge: oneDay },
     saveUninitialized: false,
   })
 );
@@ -38,6 +40,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads/")));
 
 app.use("/admin", adminRoute);
 app.use("/applicant", applicantRoute);
+app.use("/logout", noAuthRoute)
 app.use("/", noAuthRoute)
 
 app.listen(PORT, () => {
