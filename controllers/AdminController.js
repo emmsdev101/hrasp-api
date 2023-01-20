@@ -293,3 +293,77 @@ exports.getJobPositions = (req, res) => {
         res.send(result)
     })
 }
+
+exports.addCommittee = (req, res) => {
+    const association = req.body.association
+    const position = req.body.position
+    const firstname = req.body.firstname
+    const middlename = req.body.middlename
+    const lastname = req.body.lastname
+    const email = req.body.email
+
+
+    let sql = "INSERT INTO accounts (email, password, type) VALUES (?,?,?)"
+    con.query(sql, [email,"hrasp","committee-"+position], (err, result)=>{
+        if(err){
+            res.sendStatus(500)
+        }
+        const accountId = result.insertId
+
+        sql = "INSERT INTO committees (account_id, committee, position, firstname, middlename, lastname) VALUES(?,?,?,?,?,?)"
+
+        con.query(sql, [accountId, association, position, firstname, middlename, lastname],(err, result1)=>{
+            if(err){
+                console.log(err)
+                return res.send(500)
+                
+            }
+            res.send({success:true})
+        })
+    })
+}
+exports.getCommitees = (req, res) => {
+    let sql = "SELECT committees.*, accounts.email from committees INNER JOIN accounts on committees.account_id = accounts.id WHERE accounts.enabled = 1"
+    con.query(sql,(err, result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        res.send(result)
+    })
+}
+exports.editCommittee=(req, res)=>{
+    console.log(req.body)
+    const accountId = req.params.id
+    
+    const association = req.body.association
+    const position = req.body.position
+    const firstname = req.body.firstname
+    const middlename = req.body.middlename
+    const lastname = req.body.lastname
+    const email = req.body.email
+    
+
+    let sql = "UPDATE accounts SET email = ? WHERE id = ?"
+
+    con.query(sql, [email, accountId], (err, result)=>{
+       if(err){
+        res.sendStatus(500)
+        return console.log(err)
+       }
+       console.log(result)
+       if(result.affectedRows !== 1) return res.send({success:false})
+       let sql1 = "UPDATE committees SET committee = ?, position = ?, firstname = ?, middlename = ?, lastname = ? WHERE account_id = ?"
+
+       con.query(sql1, [association,position, firstname, middlename, lastname, accountId], (err, result1)=>{
+        if(err){
+            res.sendStatus(500)
+            return console.log(err)
+        }
+        console.log(result1)
+        if(result1.affectedRows !== 1)return res.send({success:false})
+        res.send({success:true})
+       })
+
+    })
+}
