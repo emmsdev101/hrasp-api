@@ -9,13 +9,14 @@ const conn = require("./config/DbConnection").con;
 
 const PORT = 4000;
 
-const {auth, authAdmin, authApplicant} = require("./helper/auth");
+const {auth, authAdmin, authApplicant, authPanel} = require("./helper/auth");
 const adminRoute = require("./routes/AdminRoutes");
 const applicantRoute = require("./routes/ApplicantRoute");
+const panelRoute = require("./routes/PanelRoutes")
 const noAuthRoute = require("./routes/NoAuthRoutes")
 const oneDay = 1000 * 60 * 60 * 24;
 
-app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.103:3000"], credentials:true}));
+app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.137:3000"], credentials:true}));
 app.use(
   session({
     secret: "emms",
@@ -35,11 +36,14 @@ app.use(bodyParser.json());
 
 app.use("/admin", authAdmin)
 app.use("/applicant", authApplicant)
+app.use("/panel",authPanel)
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads/")));
 
 app.use("/admin", adminRoute);
 app.use("/applicant", applicantRoute);
+app.use("/panel", panelRoute);
+
 app.use("/logout", noAuthRoute)
 app.use("/", noAuthRoute)
 

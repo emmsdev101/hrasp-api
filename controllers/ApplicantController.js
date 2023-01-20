@@ -126,9 +126,11 @@ exports.getApplication = (req, res)=>{
     const applicant_id = req.session.accountId
 
     console.log(applicant_id)
-    let sql = "SELECT applications.status, job_posts.title, job_posts.jobtype from applications INNER JOIN job_posts ON applications.job_id = job_posts.id WHERE applicant_id = ?"
+    let sql = "SELECT applications.status, job_posts.title, panels.departmentType from applications INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applicant_id = ?"
     con.query(sql, applicant_id, (err, result)=>{
-        if(err)return res.sendStatus(500)
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)}
         if(result.length===0)return res.send("")
         console.log("Application",result)
         res.send(result)

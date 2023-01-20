@@ -35,7 +35,7 @@ exports.postJob = (req, res)=>{
     })
 }
 exports.getJobPosts = (req, res)=>{
-    const sql = "SELECT * FROM job_posts"
+    const sql = "SELECT job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id ";
 
     con.query(sql,(err, result)=>{
         if(err){
@@ -88,11 +88,11 @@ exports.login = (req, res)=>{
 exports.getApplicants = (req, res) => {
     const status = req.params.status === "all"?"":req.params.status 
 
-    let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id "    
+    let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id "    
 
     if(status === "to-interview"){
-        sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
-    }else sql = status?sql+" WHERE status ='"+status+"'":sql
+        sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
+    }else sql = status?sql+" WHERE applications.status ='"+status+"'":sql
     con.query(sql, (err, result)=>{
         if(err){
             console.log(err)
@@ -117,12 +117,13 @@ exports.acceptApplication = (req, res) => {
     })
 }
 exports.getApplicationDetails = (req, res) =>{
-    let sql = "SELECT * FROM applications where id = ?"
+    let sql = "SELECT applications.*, applicants.firstname, applicants.middlename, applicants.lastname, applicants.age, applicants.gender, applicants.contact, job_posts.title, panels.department, panels.departmentType FROM applications INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id where applications.id = ?"
     
     const applicant = req.params.id
     console.log("id ",applicant)
     con.query(sql, applicant, (err, result)=>{
         if(err){
+            console.log(err)
             return res.sendStatus(500)
         }
         console.log(result)
@@ -154,5 +155,141 @@ exports.setSchedule = (req, res) => {
         })
         
 
+    })
+}
+exports.resetSchedule = (req, res) => {
+    const application_id = req.body.application_id
+
+    let sql = "DELETE FROM interview WHERE application_id = ?"
+
+    con.query(sql, application_id,(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+            return nsole.log(err)
+
+        }
+        sql = "UPDATE applications SET status = 'for-interview' WHERE id=?"
+        con.query(sql, application_id,(err, result)=>{
+            if(err){
+                console.log(err)
+                return res.sendStatus(500)
+            }
+            res.send("ok")
+        })
+        
+
+    })
+}
+exports.addPanel = (req,res) => {
+    const departmentType = req.body.departmentType
+    const department = req.body.department
+    const position  = req.body.position
+    const firstname = req.body.firstname
+    const middlename = req.body.middlename
+    const lastname = req.body.lastname
+    const email = req.body.email
+
+
+    let sql = "INSERT INTO accounts (email, password, type) VALUES (?,?,?)"
+    con.query(sql, [email,"hrasp","panel"], (err, result)=>{
+        if(err){
+            res.sendStatus(500)
+        }
+        const accountId = result.insertId
+
+        sql = "INSERT INTO panels (account_id, departmentType, department, position, firstname, middlename, lastname) VALUES(?,?,?,?,?,?,?)"
+
+        con.query(sql, [accountId, departmentType, department, position, firstname, middlename, lastname],(err, result1)=>{
+            if(err){
+                console.log(err)
+                return res.send(500)
+                
+            }
+            res.send({success:true})
+        })
+    })
+}
+exports.getPanels = (req, res) => {
+    let sql = "SELECT panels.*, accounts.email from panels INNER JOIN accounts on panels.account_id = accounts.id WHERE accounts.enabled = 1"
+    con.query(sql,(err, result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        res.send(result)
+    })
+}
+exports.editPanel=(req, res)=>{
+    console.log(req.body)
+    const accountId = req.params.id
+    
+    const email = req.body.email
+    const departmentType = req.body.departmentType
+    const department = req.body.department
+    const position = req.body.position
+    const firstname = req.body.firstname
+    const middlename = req.body.middlename
+    const lastname = req.body.lastname
+    
+
+    let sql = "UPDATE accounts SET email = ? WHERE id = ?"
+
+    con.query(sql, [email, accountId], (err, result)=>{
+       if(err){
+        res.sendStatus(500)
+        return console.log(err)
+       }
+       console.log(result)
+       if(result.affectedRows !== 1) return res.send({success:false})
+       let sql1 = "UPDATE panels SET departmentType = ?, department = ?, position = ?, firstname = ?, middlename = ?, lastname = ? WHERE account_id = ?"
+
+       con.query(sql1, [departmentType, department,position, firstname, middlename, lastname, accountId], (err, result1)=>{
+        if(err){
+            res.sendStatus(500)
+            return console.log(err)
+        }
+        console.log(result1)
+        if(result1.affectedRows !== 1)return res.send({success:false})
+        res.send({success:true})
+       })
+
+    })
+}
+exports.deletePanel = (req, res) => {
+    const id = req.body.id
+    let sql = "UPDATE accounts SET enabled = 0 WHERE id = ? "
+
+    con.query(sql, [id],(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+        }
+        console.log(result)
+        if(result.affectedRows !== 1)return res.send({success:false})
+        res.send({success:true})
+
+    })
+}
+exports.approveRequest = (req, res) => {
+    const id = req.body.id
+
+    let sql = "UPDATE job_posts SET status = 'approved' WHERE id = ?"
+
+    con.query(sql, [id], (err, result) => {
+        if(err){
+            console.log(err)
+            return res.send(500)
+        }
+        res.send({success:true})
+    })
+}
+exports.getJobPositions = (req, res) => {
+    const sql = "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' GROUP BY job_posts.poster, job_posts.title;";
+
+    con.query(sql,(err, result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        res.send(result)
     })
 }
