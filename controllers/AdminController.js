@@ -367,3 +367,17 @@ exports.editCommittee=(req, res)=>{
 
     })
 }
+exports.deleteCommittee = (req, res) => {
+    const id = req.body.id
+    let sql = "UPDATE accounts SET enabled = 0 WHERE id = ? "
+
+    con.query(sql, [id],(err, result)=>{
+        if(err){
+            res.sendStatus(500)
+        }
+        console.log(result)
+        if(result.affectedRows !== 1)return res.send({success:false})
+        res.send({success:true})
+
+    })
+}
