@@ -12,7 +12,10 @@ router.get("/getJobPosts",(req,res)=>panelController.getJobPosts(req, res))
 router.get("/job-data/:id",(req, res)=>panelController.getJobData(req, res))
 router.get("/getHiring",(req, res)=>panelController.getHiring(req, res))
 router.get("/getApplicants/:status", (req, res)=>panelController.getApplicants(req, res))
-router.get("/getJobPositions", panelController.getJobPositions)
+router.get("/getJobPositions/:status", panelController.getJobPositions)
+router.get("/getApplicantsForCommitteeMember/:status", adminControlloer.getApplicants)
+router.get("/getApplicantsForCommitteeHead/:status", panelController.getApplicantsForCommitteeHeads)
+
 router.post("/request-hiring",(req, res)=>{
     panelController.requestHiring(req, res)
 })

@@ -20,7 +20,7 @@ exports.login = (req, res) => {
   console.log("REquest body", req.body);
 
   con.query(
-    "SELECT id, email, password from accounts WHERE email=? AND type = 'panel'",
+    "SELECT id, email, password, type from accounts WHERE email=?",
     email,
     (err, result) => {
       if (err) {
@@ -39,7 +39,7 @@ exports.login = (req, res) => {
         req.session.accountId = data.id;
         req.session.type = "panel";
         req.session.save(() => {
-          res.send({ status: "success" });
+          res.send({ status: "success", userType: data.type });
         });
       } else res.send({ status: "wrong-password" });
     }
@@ -156,15 +156,19 @@ exports.cancelRequest = (req, res) => {
 exports.getApplicants = (req, res) => {
   const status = req.params.status === "all" ? "" : req.params.status;
 
-  const accountId = req.session.accountId
+  const accountId = req.session.accountId;
   let sql =
-    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.poster = "+accountId;
+    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.poster = " +
+    accountId;
 
   if (status === "to-interview") {
     sql =
-      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' AND job_posts.poster = "+accountId+" GROUP BY applicants.account_id";
-  } else sql = status ? sql + " AND applications.status ='" + status + "'": sql;
-  con.query(sql,(err, result) => {
+      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' AND job_posts.poster = " +
+      accountId +
+      " GROUP BY applicants.account_id";
+  } else
+    sql = status ? sql + " AND applications.status ='" + status + "'" : sql;
+  con.query(sql, (err, result) => {
     if (err) {
       console.log(err);
       return res.sendStatus(500);
@@ -174,15 +178,98 @@ exports.getApplicants = (req, res) => {
 };
 
 exports.getJobPositions = (req, res) => {
-    const userId = req.session.accountId;
+  const type = req.params.type;
+  if (type === "department") return getJobPositionsForDepartment(req, res);
+  if (type === "committee") return getJobPositionsForCommittee(req, res);
+  if (type === "head") return getJobPositionsForCommitteeHead(req, res);
+};
 
-    const sql = "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' AND poster = ? GROUP BY job_posts.poster, job_posts.title;";
+function getJobPositionsForDepartment(req, res) {
+  const userId = req.session.accountId;
 
-    con.query(sql,[userId],(err, result)=>{
-        if(err){
-            console.log(err)
-            return res.sendStatus(500)
-        }
-        res.send(result)
-    })
+  const sql =
+    "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' AND poster = ? GROUP BY job_posts.poster, job_posts.title;";
+
+  con.query(sql, [userId], (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.sendStatus(500);
+    }
+    res.send(result);
+  });
 }
+
+function getJobPositionsForCommittee(req, res) {
+  const sql =
+    "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' GROUP BY job_posts.poster, job_posts.title;";
+
+  con.query(sql, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.sendStatus(500);
+    }
+    res.send(result);
+    console.log("Commitee" + result);
+  });
+}
+
+function getJobPositionsForCommitteeHead(req, res) {
+  const userId = req.session.accountId;
+
+  let userSql = "SELECT * from committees WHERE account_id = ?";
+  con.query(userSql, [userId], (err, userResult) => {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
+    if (!userSql[0]) req.send({ success: false });
+
+    const committee = userResult[0].committee;
+
+    let jobsSql =
+      "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' AND panels.departmentType = ? GROUP BY job_posts.poster, job_posts.title;";
+
+    con.query(jobsSql, [committee], (err1, jobsResult) => {
+      if (err1) {
+        console.log(err1);
+        return res.sendStatus(500);
+      }
+      res.send(jobsResult);
+    });
+  });
+}
+exports.getApplicantsForCommitteeHeads = (req, res) => {
+  const status = req.params.status === "all" ? "" : req.params.status;
+
+  console.log("Request Status",status)
+
+  const userId = req.session.accountId;
+
+  let userSql = "SELECT * from committees WHERE account_id = ?";
+
+  con.query(userSql, [userId], (err, userResult) => {
+    if (err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
+    if (!userSql[0]) req.send({ success: false });
+
+    const committee = userResult[0].committee;
+
+    let sql =
+      "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id ";
+
+    if (status === "to-interview") {
+      sql =
+        "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview'  && panels.departmentType = ? GROUP BY applicants.account_id";
+    } else
+      sql = status ? sql + " WHERE applications.status ='" + status + "' && panels.departmentType = ?" : sql + "WHERE panels.departmentType = ?";
+    con.query(sql, [committee], (err, result) => {
+      if (err) {
+        console.log(err);
+        return res.sendStatus(500);
+      }
+      res.send(result);
+    });
+  });
+};
