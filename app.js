@@ -53,10 +53,12 @@ app.use("/", noAuthRoute)
 app.listen(PORT, () => {
   console.log("Server is listening at port: " + PORT);
 });
-conn.connect(function (err) {
-  if (err) {
-    throw err;
-  }
-  console.log("Database connected");
-});
+if(!process.env.NO_DATABASE){
+  conn.connect(function (err) {
+    if (err) {
+      throw err;
+    }
+    console.log("Database connected");
+  });
+}
 module.exports = app;
