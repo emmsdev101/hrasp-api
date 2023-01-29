@@ -1,5 +1,7 @@
+const uuidv4 = require('uuid').v4
 const dbConnection = require('../config/DbConnection')
 const con = dbConnection.con
+
 
 exports.postJob = (req, res)=>{
     const reqData = req.body.postingData
@@ -91,7 +93,7 @@ exports.getApplicants = (req, res) => {
     let sql = "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id "    
 
     if(status === "to-interview"){
-        sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
+        sql = "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id"
     }else sql = status?sql+" WHERE applications.status ='"+status+"'":sql
     con.query(sql, (err, result)=>{
         if(err){
@@ -135,10 +137,11 @@ exports.setSchedule = (req, res) => {
     const application_id = req.body.application_id
     const date = req.body.date
     const time = req.body.time
+    const roomId = uuidv4()
 
-    let sql = "INSERT INTO interview (application_id, date, time) VALUES(?,?,?)"
+    let sql = "INSERT INTO interview (application_id, date, time, room_id) VALUES(?,?,?,?)"
 
-    con.query(sql, [application_id, date, time],(err, result)=>{
+    con.query(sql, [application_id, date, time, roomId],(err, result)=>{
         if(err){
             res.sendStatus(500)
 
@@ -155,6 +158,24 @@ exports.setSchedule = (req, res) => {
         })
         
 
+    })
+}
+exports.startInterview = (req, res)=> {
+    const roomId = req.body.roomId
+    const sql = "UPDATE interview SET status=? WHERE room_id = ?"
+    con.query(sql,['starting',roomId],(err, result)=>{
+        if(err){
+            console.log(err)
+            res.sendStatus(500)
+        }
+        if(result.affectedRows >= 1){
+           return res.send({
+                success:true
+            })
+        }
+        return res.send({
+            success:true
+        })
     })
 }
 exports.resetSchedule = (req, res) => {

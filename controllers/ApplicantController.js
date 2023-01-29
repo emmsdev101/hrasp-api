@@ -143,7 +143,7 @@ exports.getApplication = (req, res)=>{
 }
 exports.getSchedule = (req, res) => {
     const applicant_id = req.session.accountId
-    let sql = "SELECT date_format(date,'%m-%d-%Y')as date, time FROM interview INNER JOIN applications ON interview.application_id = applications.id WHERE applications.applicant_id=?"
+    let sql = "SELECT date_format(interview.date,'%m-%d-%Y')as date, interview.time, interview.room_id, interview.status FROM interview INNER JOIN applications ON interview.application_id = applications.id WHERE applications.applicant_id=?"
     con.query(sql, applicant_id, (err, result)=>{
         if(err){
             console.log(err)
@@ -151,4 +151,8 @@ exports.getSchedule = (req, res) => {
         }
         res.send(result[0])
     })
+}
+
+exports.sendConfirmation = (req, res)=>{
+    
 }

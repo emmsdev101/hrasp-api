@@ -26,6 +26,7 @@ router.get("/getCommittees",(req, res)=>adminControlloer.getCommitees(req, res))
 
 router.post('/setSchedule', adminControlloer.setSchedule)
 router.post('/resetSchedule', adminControlloer.resetSchedule)
+router.post('/startInterview', adminControlloer.startInterview)
 router.post('/addPanel',(req, res)=>adminControlloer.addPanel(req,res))
 router.post("/editPanel/:id", (req, res)=>adminControlloer.editPanel(req, res))
 router.post("/deletePanel",(req, res)=>adminControlloer.deletePanel(req, res))
@@ -33,5 +34,6 @@ router.post("/approve-request",(req, res)=>adminControlloer.approveRequest(req, 
 router.post('/addCommitee', adminControlloer.addCommittee)
 router.post("/editCommittee/:id", (req, res)=>adminControlloer.editCommittee(req, res))
 router.post("/deleteCommittee",(req, res)=>adminControlloer.deleteCommittee(req, res))
+
 
 module.exports = router
