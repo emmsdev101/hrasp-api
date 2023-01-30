@@ -19,6 +19,8 @@ const panelRoute = require("./routes/PanelRoutes")
 const noAuthRoute = require("./routes/NoAuthRoutes")
 const oneDay = 1000 * 60 * 60 * 24;
 
+const signups = {}
+
 app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.137:3000"], credentials:true}));
 app.use(
   session({
@@ -35,6 +37,8 @@ app.use(
     extended: true,
   })
 );
+app.set('signups', signups)
+
 app.use(bodyParser.json());
 
 app.use("/admin", authAdmin)
@@ -53,7 +57,7 @@ app.use("/", noAuthRoute)
 app.listen(PORT, () => {
   console.log("Server is listening at port: " + PORT);
 });
-if(!process.env.NO_DATABASE){
+if(process.env.NO_DATABASE === false){
   conn.connect(function (err) {
     if (err) {
       throw err;

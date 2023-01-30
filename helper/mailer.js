@@ -1,21 +1,22 @@
 const nodemailer = require('nodemailer')
 
 let transporter = nodemailer.createTransport({
-    host:"smtp.sendgrid.net",
+    host:"smtp-relay.sendinblue.com",
     port:"587",
     secure:false,
     auth:{
-        user:"apikey",
-        pass:process.env.SEND_GRID_KEY
+        user:"emmsdevs@gmail.com",
+        pass:"X3GfCRpgLF82mbNw"
     }
 })
-exports.sendMail = async(req, res)=>{
+exports.sendMail = async(subject, recipient, message)=>{
     const info = await transporter.sendMail({
-        from:'katipunan.emmanueljr@wvsu.edu.ph',
-        to:"emman199810@gmail.com",
-        text:"Hey! This is a test email"
+        from:'WVSUCC HRMO <emmsdevs@gmail.com>',
+        to:recipient,
+        subject:subject,
+        text:message
     })
-    const message = "Message sent: "+info.messageId
-    res.send(message)
-    console.log(message);
+    const sent = "Message sent: "+info.messageId
+    console.log(sent);
+    return sent
 }

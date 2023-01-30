@@ -1,5 +1,6 @@
 const uuidv4 = require('uuid').v4
 const dbConnection = require('../config/DbConnection')
+const { sendMail } = require('../helper/mailer')
 const con = dbConnection.con
 
 
@@ -113,10 +114,24 @@ exports.acceptApplication = (req, res) => {
     $stmt = con.query(sql, [status, id],(err, result)=>{
         if(err){
             return res.sendStatus(500)
-        }
-        console.log(result)
+        }        
         res.send(true)
     })
+    let sqlEmail = "SELECT email FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id WHERE applications.id = ?"
+     
+    con.query(sqlEmail,[id],(err, result)=>{
+        if(result[0]){
+            let message = ""
+
+            if(status === "prequalification")message = `Congratulations! Your application has been accepted.
+            You can now proceed to pre qualifying exam (neuro examination). Take your neuro exam at West Visayas State University Main Campus Testing Center.
+            `
+
+            if(status === "for-interview")message = `Congratulations! You have passed the pre qualification. Be prepared as you will get scheduled for your interview soon.`
+
+            sendMail("Applicaition",result[0].email,message)
+        }
+     })   
 }
 exports.getApplicationDetails = (req, res) =>{
     let sql = "SELECT applications.*, applicants.firstname, applicants.middlename, applicants.lastname, applicants.age, applicants.gender, applicants.contact, job_posts.title, panels.department, panels.departmentType FROM applications INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id where applications.id = ?"
@@ -143,13 +158,14 @@ exports.setSchedule = (req, res) => {
 
     con.query(sql, [application_id, date, time, roomId],(err, result)=>{
         if(err){
-            res.sendStatus(500)
+            console.log(err)
+            return res.sendStatus(500)
 
         }
         sql = "UPDATE applications SET status = 'to-interview' WHERE id=?"
-        con.query(sql, application_id,(err, result)=>{
-            if(err){
-                console.log(err)
+        con.query(sql, application_id,(err1, result)=>{
+            if(err1){
+                console.log(err1)
                 return res.sendStatus(500)
             }
             console.log(result)
@@ -159,6 +175,14 @@ exports.setSchedule = (req, res) => {
         
 
     })
+    let sqlEmail = "SELECT email FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id WHERE applications.id = ?"
+     
+    con.query(sqlEmail,[application_id],(err, result)=>{
+        if(result[0]){
+            let message = `Your interview has been schedule on ${date}: ${time}.`
+            sendMail("Applicaition",result[0].email,message)
+        }
+     })
 }
 exports.startInterview = (req, res)=> {
     const roomId = req.body.roomId
@@ -177,6 +201,14 @@ exports.startInterview = (req, res)=> {
             success:true
         })
     })
+    let sqlEmail = "SELECT accounts.email FROM interview INNER JOIN applications ON interview.application_id = applications.id INNER JOIN accounts ON applications.applicant_id = accounts.id WHERE interview.room_id = ?"
+     
+    con.query(sqlEmail,[roomId],(err, result)=>{
+        if(result[0]){
+            let message = "Your interivew has been stated. Please log in to the portal and join the conference."
+            sendMail("Applicaition",result[0].email,message)
+        }
+     })
 }
 exports.resetSchedule = (req, res) => {
     const application_id = req.body.application_id
