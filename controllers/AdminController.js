@@ -336,7 +336,7 @@ exports.approveRequest = (req, res) => {
     })
 }
 exports.getJobPositions = (req, res) => {
-    const sql = "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' GROUP BY job_posts.poster, job_posts.title;";
+    const sql = "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' GROUP BY job_posts.poster, job_posts.title, job_posts.id;";
 
     con.query(sql,(err, result)=>{
         if(err){
