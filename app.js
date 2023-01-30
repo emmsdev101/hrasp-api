@@ -21,7 +21,7 @@ const oneDay = 1000 * 60 * 60 * 24;
 
 const signups = {}
 
-app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.137:3000,http://ahp.onrender.com"], credentials:true}));
+app.use(cors({ origin: ["http://localhost:3000","http://192.168.254.137:3000,https://ahp.onrender.com"], credentials:true}));
 app.use(
   session({
     secret: "emms",
