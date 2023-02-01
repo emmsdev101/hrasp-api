@@ -10,13 +10,18 @@ let transporter = nodemailer.createTransport({
     }
 })
 exports.sendMail = async(subject, recipient, message)=>{
-    const info = await transporter.sendMail({
-        from:'WVSUCC HRMO <emmsdevs@gmail.com>',
-        to:recipient,
-        subject:subject,
-        text:message
-    })
-    const sent = "Message sent: "+info.messageId
-    console.log(sent);
-    return sent
+    try{
+        const info = await transporter.sendMail({
+            from:'WVSUCC HRMO <emmsdevs@gmail.com>',
+            to:recipient,
+            subject:subject,
+            text:message
+        })
+        const sent = "Message sent: "+info.messageId
+        console.log(sent);
+        return sent
+    }catch(err){
+        console.log(err)
+        return false
+    }
 }
