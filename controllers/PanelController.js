@@ -177,14 +177,7 @@ exports.getApplicants = (req, res) => {
   });
 };
 
-exports.getJobPositions = (req, res) => {
-  const type = req.params.type;
-  if (type === "department") return getJobPositionsForDepartment(req, res);
-  if (type === "committee") return getJobPositionsForCommittee(req, res);
-  if (type === "head") return getJobPositionsForCommitteeHead(req, res);
-};
-
-function getJobPositionsForDepartment(req, res) {
+exports.getJobPositionsForDepartment = (req, res) => {
   const userId = req.session.accountId;
 
   const sql =
@@ -199,7 +192,7 @@ function getJobPositionsForDepartment(req, res) {
   });
 }
 
-function getJobPositionsForCommittee(req, res) {
+exports.getJobPositionsForCommittee = (req, res)=> {
   const sql =
     "SELECT sum(job_posts.num_persons) as total_persons, job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' GROUP BY job_posts.poster, job_posts.title;";
 
@@ -213,7 +206,7 @@ function getJobPositionsForCommittee(req, res) {
   });
 }
 
-function getJobPositionsForCommitteeHead(req, res) {
+exports.getJobPositionsForCommitteeHead = (req, res)=> {
   const userId = req.session.accountId;
 
   let userSql = "SELECT * from committees WHERE account_id = ?";
@@ -273,3 +266,29 @@ exports.getApplicantsForCommitteeHeads = (req, res) => {
     });
   });
 };
+exports.evaluate = (req, res)=>{
+  const id = req.body.id
+  const training = req.body.training
+  const remarks = req.body.remarks
+  const considireation = req.body.considiration
+  const total = req.body.total
+  const ratings = req.body.ratings
+
+  const sql = "UPDATE evaluations SET ratings=?, recommendation=?,remarks=?, training=?, total=? where id = ?"
+  const data = [
+    JSON.stringify(ratings),
+    considireation,
+    remarks,
+    training,
+    total,
+    id
+  ]
+  con.query(sql,data,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.send({success:false})
+    }
+    console.log(result)
+    res.send({succes:true})
+  })
+}

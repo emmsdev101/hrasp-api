@@ -34,6 +34,6 @@ router.post("/approve-request",(req, res)=>adminControlloer.approveRequest(req, 
 router.post('/addCommitee', adminControlloer.addCommittee)
 router.post("/editCommittee/:id", (req, res)=>adminControlloer.editCommittee(req, res))
 router.post("/deleteCommittee",(req, res)=>adminControlloer.deleteCommittee(req, res))
-
+router.post("/endInterview",adminControlloer.endInterview)
 
 module.exports = router
