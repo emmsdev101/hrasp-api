@@ -20,7 +20,7 @@ router.get("/getJobPositions/department", panelController.getJobPositionsForDepa
 router.get("/getApplicantsForCommitteeMember/:status", adminControlloer.getApplicants)
 router.get("/getApplicantsForCommitteeHead/:status", panelController.getApplicantsForCommitteeHeads)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
-
+router.get('/getEvaluationResults',panelController.getEvaluationResults)
 router.post("/request-hiring",(req, res)=>{
     panelController.requestHiring(req, res)
 })

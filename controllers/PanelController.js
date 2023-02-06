@@ -267,6 +267,7 @@ exports.getApplicantsForCommitteeHeads = (req, res) => {
   });
 };
 exports.evaluate = (req, res)=>{
+  const applicationId = req.body.applicationId
   const id = req.body.id
   const training = req.body.training
   const remarks = req.body.remarks
@@ -290,5 +291,25 @@ exports.evaluate = (req, res)=>{
     }
     console.log(result)
     res.send({succes:true})
+
+    const updateApplication = "UPDATE applications SET status = 'for-selection' WHERE id = ?"
+    con.query(updateApplication,applicationId,(err,result)=>{
+      if(err){
+        console.log(err)
+      }
+      console.log(result)
+    })
+    
+  })
+}
+
+exports.getEvaluationResults = (req, res)=>{
+  const id = req.session.accountId
+  const sql = "SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-selection' AND job_posts.poster = ? GROUP BY evaluations.application_id;"
+  con.query(sql,id,(err, result)=>{
+    if(err){
+      console.log(err)
+    }
+    res.send(result)
   })
 }

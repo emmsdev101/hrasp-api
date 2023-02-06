@@ -8,6 +8,16 @@ router.get('/', (req, res)=>{
     let signups = req.app.get('signups')
     res.send("wellcome "+ signups)
 })
+router.get('/testEmail/:email/:subject/:message',(req, res)=>{
+    const email  = req.params.email
+    const subject = req.params.subject
+    const message = req.params.message
+
+    console.log(email,subject,message)
+    const send = sendMail(subject, email, message)
+    res.send(send)
+
+})
 router.post("/verifyEmail",(req, res)=>{
     const email = req.body.email
 
