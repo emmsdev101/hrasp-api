@@ -529,3 +529,12 @@ exports.getEvaluationData = (req, res) => {
         res.send(result)
     })
 }
+exports.getEvaluationResults = (req, res)=>{
+  const sql = "SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-selection' GROUP BY evaluations.application_id;"
+  con.query(sql,(err, result)=>{
+    if(err){
+      console.log(err)
+    }
+    res.send(result)
+  })
+}

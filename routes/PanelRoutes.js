@@ -21,6 +21,8 @@ router.get("/getApplicantsForCommitteeMember/:status", adminControlloer.getAppli
 router.get("/getApplicantsForCommitteeHead/:status", panelController.getApplicantsForCommitteeHeads)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
 router.get('/getEvaluationResults',panelController.getEvaluationResults)
+router.get('/getEvaluationResultsForCommitteeMember', adminControlloer.getEvaluationResults)
+router.get('/getEvaluationResultsForCommitteeHead', panelController.getEvaluationResultsForCommitteeHead)
 router.post("/request-hiring",(req, res)=>{
     panelController.requestHiring(req, res)
 })

@@ -23,6 +23,9 @@ router.get("/getApplicationDetails/:id", adminControlloer.getApplicationDetails)
 router.get("/getJobPositions", adminControlloer.getJobPositions)
 router.get("/getPanels",(req, res)=>adminControlloer.getPanels(req, res))
 router.get("/getCommittees",(req, res)=>adminControlloer.getCommitees(req, res))
+router.get('/getEvaluationResults',adminControlloer.getEvaluationResults)
+router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
+
 
 router.post('/setSchedule', adminControlloer.setSchedule)
 router.post('/resetSchedule', adminControlloer.resetSchedule)
