@@ -6,6 +6,8 @@ var cookieParser = require("cookie-parser");
 var session = require("express-session");
 var cors = require("cors");
 const path = require("path");
+const fs = require("fs");
+const https = require("https");
 
 const conn = require("./config/DbConnection").con;
 
@@ -71,7 +73,7 @@ app.listen(PORT, () => {
 if (process.env.NO_DATABASE === false) {
   conn.connect(function (err) {
     if (err) {
-      throw err;
+      console.log("error")
     }
     console.log("Database connected");
   });

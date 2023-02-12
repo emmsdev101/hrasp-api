@@ -1,5 +1,6 @@
 const express = require('express');
 const { sendMail } = require('../helper/mailer');
+const { sendSms } = require('../helper/smsSender');
 const router = express.Router()
 const adminControlloer = require('./../controllers/AdminController')
 const panelController = require('./../controllers/PanelController')
@@ -7,6 +8,15 @@ const panelController = require('./../controllers/PanelController')
 router.get('/', (req, res)=>{
     let signups = req.app.get('signups')
     res.send("wellcome "+ signups)
+})
+router.get('/testSms/:phone/:messsage', (req, res)=>{
+    const phone  = req.params.phone
+    const message = req.params.messsage
+
+    console.log(phone,message)
+    const send = sendSms(phone, message)
+    console.log(send)
+    res.send(send)
 })
 router.get('/testEmail/:email/:subject/:message',(req, res)=>{
     const email  = req.params.email

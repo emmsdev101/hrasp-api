@@ -23,7 +23,9 @@
     "mysql2": "^3.1.0",
     "nodemailer": "^6.9.1",
     "nodemon": "^2.0.20",
+    "peerjs": "^1.4.7",
     "socket.io": "^4.5.4",
+    "twilio": "^4.7.2",
     "uuid": "^9.0.0"
   }
 }

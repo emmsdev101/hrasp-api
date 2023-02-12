@@ -1,6 +1,7 @@
 const uuidv4 = require("uuid").v4;
 const dbConnection = require("../config/DbConnection");
 const { sendMail } = require("../helper/mailer");
+const { sendSms } = require("../helper/smsSender");
 const con = dbConnection.con;
 
 exports.postJob = (req, res) => {
@@ -101,6 +102,8 @@ exports.getApplicants = (req, res) => {
       "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id";
   } else
     sql = status ? sql + " WHERE applications.status ='" + status + "'" : sql;
+
+    console.log(sql)
   con.query(sql, (err, result) => {
     if (err) {
       console.log(err);
@@ -122,7 +125,7 @@ exports.acceptApplication = (req, res) => {
     res.send(true);
   });
   let sqlEmail =
-    "SELECT email FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id WHERE applications.id = ?";
+    "SELECT email, applicants.contact FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN applicants ON accounts.id = applicants.account_id WHERE applications.id = ?";
 
   con.query(sqlEmail, [id], (err, result) => {
     if (result[0]) {
@@ -137,6 +140,8 @@ exports.acceptApplication = (req, res) => {
         message = `Congratulations! You have passed the pre qualification. Be prepared as you will get scheduled for your interview soon.`;
 
       sendMail("Applicaition", result[0].email, message);
+      sendSms(result[0].contact, message)
+
     }
   });
 };
@@ -182,12 +187,14 @@ exports.setSchedule = (req, res) => {
     });
   });
   let sqlEmail =
-    "SELECT email FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id WHERE applications.id = ?";
+    "SELECT email, applicants.contact FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN applicants ON accounts.id = applicants.account_id WHERE applications.id = ?";
 
   con.query(sqlEmail, [application_id], (err, result) => {
     if (result[0]) {
       let message = `Your interview has been schedule on ${date}: ${time}.`;
       sendMail("Applicaition", result[0].email, message);
+      sendSms(result[0].contact, message)
+
     }
   });
 };
@@ -209,13 +216,14 @@ exports.startInterview = (req, res) => {
     });
   });
   let sqlEmail =
-    "SELECT accounts.email FROM interview INNER JOIN applications ON interview.application_id = applications.id INNER JOIN accounts ON applications.applicant_id = accounts.id WHERE interview.room_id = ?";
+    "SELECT accounts.email, applicants.contact FROM interview INNER JOIN applications ON interview.application_id = applications.id INNER JOIN accounts ON applications.applicant_id = accounts.id INNER JOIN applicants ON accounts.id = applicants.account_id WHERE interview.room_id = ?";
 
   con.query(sqlEmail, [roomId], (err, result) => {
     if (result[0]) {
       let message =
         "Your interivew has been stated. Please log in to the portal and join the conference.";
       sendMail("Applicaition", result[0].email, message);
+      sendSms(result[0].contact, message)
     }
   });
 };
