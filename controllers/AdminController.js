@@ -546,3 +546,68 @@ exports.getEvaluationResults = (req, res)=>{
     res.send(result)
   })
 }
+
+exports.getAccounts = (req, res) => {
+  const sql = "SELECT applicants.account_id, applicants.firstname, applicants.middlename, applicants.lastname, applicants.gender, applicants.age, date_format(applicants.birthday,'%Y-%m-%d') as birthday,applicants.contact, accounts.email, accounts.status FROM `accounts` INNER JOIN applicants ON accounts.id = applicants.account_id WHERE accounts.type = 'applicant'"
+
+  con.query(sql,null,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    res.send(result)
+  })
+}
+exports.getAccounts = (req, res) => {
+  const sql = "SELECT applicants.account_id, applicants.firstname, applicants.middlename, applicants.lastname, applicants.gender, applicants.age, date_format(applicants.birthday,'%Y-%m-%d') as birthday,applicants.contact, accounts.email, accounts.status FROM `accounts` INNER JOIN applicants ON accounts.id = applicants.account_id WHERE accounts.type = 'applicant' and accounts.status != 'declined'"
+
+  con.query(sql,null,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    res.send(result)
+  })
+}
+exports.acceptAccount = (req, res) => {
+  const accountId = req.body.accountId
+  const sql = "UPDATE accounts SET status = 'active' WHERE id = ?"
+
+  con.query(sql,accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    console.log(result)
+    if(result.affectedRows < 0)return res.send({success:false})
+    res.send({success:true})
+  })
+}
+exports.decline = (req, res) => {
+  const accountId = req.body.accountId
+  const sql = "UPDATE accounts SET status = 'declined' WHERE id = ?"
+
+  con.query(sql,accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    console.log(result)
+    if(result.affectedRows < 0)return res.send({success:false})
+    res.send({success:true})
+  })
+}
+exports.deactivate = (req, res) => {
+  const accountId = req.body.accountId
+  const sql = "UPDATE accounts SET status = 'deactivated' WHERE id = ?"
+
+  con.query(sql,accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    console.log(result)
+    if(result.affectedRows < 0)return res.send({success:false})
+    res.send({success:true})
+  })
+}

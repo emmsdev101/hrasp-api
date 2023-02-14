@@ -25,6 +25,7 @@ router.get("/getPanels",(req, res)=>adminControlloer.getPanels(req, res))
 router.get("/getCommittees",(req, res)=>adminControlloer.getCommitees(req, res))
 router.get('/getEvaluationResults',adminControlloer.getEvaluationResults)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
+router.get("/getAccounts",adminControlloer.getAccounts)
 
 
 router.post('/setSchedule', adminControlloer.setSchedule)
@@ -38,5 +39,8 @@ router.post('/addCommitee', adminControlloer.addCommittee)
 router.post("/editCommittee/:id", (req, res)=>adminControlloer.editCommittee(req, res))
 router.post("/deleteCommittee",(req, res)=>adminControlloer.deleteCommittee(req, res))
 router.post("/endInterview",adminControlloer.endInterview)
+router.post("/acceptAccount",adminControlloer.acceptAccount)
+router.post("/decline",adminControlloer.decline)
+router.post("/deactivate",adminControlloer.deactivate)
 
 module.exports = router
