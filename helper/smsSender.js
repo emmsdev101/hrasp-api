@@ -1,17 +1,11 @@
-const accountSid = process.env.TWILLIO_SSID; 
-const authToken = process.env.TWILLIO_TOKEN; 
-const client = require('twilio')(accountSid, authToken); 
- 
+const { default: axios } = require("axios")
+
 exports.sendSms = async(reciever, message)=>{
 
-    console.log("sending sms:",reciever, message)
-    const sent = await client.messages 
-      .create({      
-        body:message,   
-         to: reciever,
-         from:"MG831f37afd8d25361b4a251406eda0045"
-       })
+    axios.get(`http://localhost/sms-api?number=${reciever}&message=${message}`).then((result)=>{
+      console.log("Message sent",result.data)
+    })
 
-    return sent.sid
+    return 0
 
 }
