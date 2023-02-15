@@ -31,6 +31,7 @@ app.use(
       "http://192.168.254.179:3000",
       "http://192.168.254.103:3000",
       "http://192.168.254.173:3000",
+      "https://ahp.onrender.com"
     ],
     credentials: true,
   })
