@@ -131,13 +131,13 @@ exports.acceptApplication = (req, res) => {
     if (result[0]) {
       let message = "";
 
-      if (status === "prequalification")
-        message = `Congratulations! Your application has been accepted.
-            You can now proceed to pre qualifying exam (neuro examination). Take your neuro exam at West Visayas State University Main Campus Testing Center.
-            `;
-
       if (status === "for-interview")
-        message = `Congratulations! You have passed the pre qualification. Be prepared as you will get scheduled for your interview soon.`;
+        message = `Congratulations! Your application has been accepted.
+            You can now proceed to interview. Stand by for further notice as we will be scheduling your interview soon.
+            `;
+    
+      // if (status === "for-interview")
+      //   message = `Congratulations! You have passed the pre qualification. Be prepared as you will get scheduled for your interview soon.`;
 
       sendMail("Applicaition", result[0].email, message);
       sendSms(result[0].contact, message)
@@ -581,6 +581,21 @@ exports.acceptAccount = (req, res) => {
     console.log(result)
     if(result.affectedRows < 0)return res.send({success:false})
     res.send({success:true})
+
+    const sql1 = "SELECT accounts.email, applicants.contact from applicants INNER JOIN accounts ON applicants.account_id=accounts.id WHERE accounts.id=?"
+    
+    con.query(sql1,accountId,(err1, result1)=>{
+      if(err1){
+       return console.log(err1)
+      }
+      if(!result1[0])return console.log(result1)
+      const applicant = result1[0]
+      if(applicant){
+        const message = "Hi! Your account is now verified, you can now log in to our portal at http://localhost:3000"
+        sendMail("Account Verified", applicant.email, message)
+        sendSms(applicant.contact, message)
+      }
+    })
   })
 }
 exports.decline = (req, res) => {
@@ -595,6 +610,21 @@ exports.decline = (req, res) => {
     console.log(result)
     if(result.affectedRows < 0)return res.send({success:false})
     res.send({success:true})
+
+    const sql1 = "SELECT accounts.email, applicants.contact from applicants INNER JOIN accounts ON applicants.account_id=accounts.id WHERE accounts.id=?"
+    
+    con.query(sql1,accountId,(err1, result1)=>{
+      if(err1){
+       return console.log(err1)
+      }
+      if(!result1[0])return console.log(result1)
+      const applicant = result1[0]
+      if(applicant){
+        const message = "Hi! Your registration has been declined, we are unable to verify the legitimacy of this account."
+        sendMail("Account Not Verified", applicant.email, message)
+        sendSms(applicant.contact, message)
+      }
+    })
   })
 }
 exports.deactivate = (req, res) => {
@@ -609,5 +639,20 @@ exports.deactivate = (req, res) => {
     console.log(result)
     if(result.affectedRows < 0)return res.send({success:false})
     res.send({success:true})
+
+    const sql1 = "SELECT accounts.email, applicants.contact from applicants INNER JOIN accounts ON applicants.account_id=accounts.id WHERE accounts.id=?"
+    
+    con.query(sql1,accountId,(err1, result1)=>{
+      if(err1){
+       return console.log(err1)
+      }
+      if(!result1[0])return console.log(result1)
+      const applicant = result1[0]
+      if(applicant){
+        const message = "Hi! We'll deactivate your account due to inactivity, if you feel this is a mistake, please contact us. "
+        sendMail("Account Deactivated", applicant.email, message)
+        sendSms(applicant.contact, message)
+      }
+    })
   })
 }
