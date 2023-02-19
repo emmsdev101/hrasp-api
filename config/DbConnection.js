@@ -1,9 +1,8 @@
 var mysql = require('mysql2');
 
 exports.con = mysql.createConnection({
-  host: "18.191.54.215",
+  host: "localhost",
   port:'3306',
-  user: "hrasp",
-  password:"1234",
+  user: "root",
   database:"hrasp"
 });

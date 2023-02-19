@@ -17,11 +17,11 @@ router.get("/getJobPositions/head", panelController.getJobPositionsForCommitteeH
 router.get("/getJobPositions/department", panelController.getJobPositionsForDepartment)
 
 
-router.get("/getApplicantsForCommitteeMember/:status", adminControlloer.getApplicants)
+router.get("/getApplicantsForCommitteeMember/:status", panelController.getApplicantsForCommitteeMember)
 router.get("/getApplicantsForCommitteeHead/:status", panelController.getApplicantsForCommitteeHeads)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
 router.get('/getEvaluationResults',panelController.getEvaluationResults)
-router.get('/getEvaluationResultsForCommitteeMember', adminControlloer.getEvaluationResults)
+router.get('/getEvaluationResultsForCommitteeMember', panelController.getEvaluationResultsForCommitteemember)
 router.get('/getEvaluationResultsForCommitteeHead', panelController.getEvaluationResultsForCommitteeHead)
 router.post("/request-hiring",(req, res)=>{
     panelController.requestHiring(req, res)

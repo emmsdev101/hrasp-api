@@ -158,7 +158,7 @@ exports.getApplicants = (req, res) => {
 
   const accountId = req.session.accountId;
   let sql =
-    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.poster = " +
+    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.poster = " +
     accountId;
 
   if (status === "to-interview") {
@@ -166,6 +166,16 @@ exports.getApplicants = (req, res) => {
       "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time, interview.room_id, interview.status FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' AND job_posts.poster = " +
       accountId +
       " GROUP BY applicants.account_id";
+  } else if (status === "for-evaluation") {
+    sql = `SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, 
+    job_posts.title, applications.status, applications.id as application_id, panels.department, 
+    panels.departmentType,date_format(interview.date,'%m-%d-%Y') as date, interview.time 
+    FROM applicants INNER JOIN applications on applicants.account_id = applications.applicant_id 
+    INNER JOIN job_posts on applications.job_id = job_posts.id 
+    INNER JOIN panels ON job_posts.poster = panels.account_id 
+    INNER JOIN interview on applications.id = interview.application_id 
+    WHERE job_posts.poster = '${accountId}' AND applications.id NOT IN 
+    (SELECT evaluations.application_id FROM evaluations WHERE evaluations.evaluator = ${accountId});`;
   } else
     sql = status ? sql + " AND applications.status ='" + status + "'" : sql;
   con.query(sql, (err, result) => {
@@ -250,11 +260,21 @@ exports.getApplicantsForCommitteeHeads = (req, res) => {
     const committee = userResult[0].committee;
 
     let sql =
-      "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id ";
+      "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType,date_format(interview.date,'%Y-%m-%d') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id INNER JOIN interview ON applications.id = interview.application_id ";
 
     if (status === "to-interview") {
       sql =
         "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview'  && panels.departmentType = ? GROUP BY applicants.account_id";
+    } else if (status === "for-evaluation") {
+      sql = `SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, 
+      job_posts.title, applications.status, applications.id as application_id, panels.department, 
+      panels.departmentType,date_format(interview.date,'%m-%d-%Y') as date, interview.time
+      FROM applicants
+      INNER JOIN applications on applicants.account_id = applications.applicant_id 
+      INNER JOIN job_posts on applications.job_id = job_posts.id 
+      INNER JOIN panels ON job_posts.poster = panels.account_id 
+      INNER JOIN interview on applications.id = interview.application_id
+      WHERE panels.departmentType = ? AND applications.id NOT IN (SELECT evaluations.application_id FROM evaluations WHERE evaluations.evaluator = ${userId} AND evaluations.total != 'NULL')`;
     } else
       sql = status
         ? sql +
@@ -269,6 +289,28 @@ exports.getApplicantsForCommitteeHeads = (req, res) => {
       }
       res.send(result);
     });
+  });
+};
+exports.getApplicantsForCommitteeMember = (req, res) => {
+  const status = req.params.status === "all" ? "" : req.params.status;
+  const accountId = req.session.accountId;
+  console.log("Request Status", status);
+
+  let sql =
+    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType,date_format(interview.date,'%Y-%m-%d') as date, interview.time FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id INNER JOIN interview ON applications.id = interview.application_id ";
+
+  if (status === "to-interview") {
+    sql =
+      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview'  && panels.departmentType = ? GROUP BY applicants.account_id";
+  } else if (status === "for-evaluation") {
+    sql = `SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType,date_format(interview.date,'%m-%d-%Y') as date, interview.time FROM applicants INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id INNER JOIN interview on applications.id = interview.application_id WHERE applications.id NOT IN (SELECT evaluations.application_id FROM evaluations WHERE evaluations.evaluator = ${accountId} AND evaluations.total != 'NULL');`;
+  } else sql = status ? sql + " WHERE applications.status ='" + status : sql;
+  con.query(sql, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.sendStatus(500);
+    }
+    res.send(result);
   });
 };
 exports.evaluate = (req, res) => {
@@ -297,22 +339,13 @@ exports.evaluate = (req, res) => {
     }
     console.log(result);
     res.send({ succes: true });
-
-    const updateApplication =
-      "UPDATE applications SET status = 'for-selection' WHERE id = ?";
-    con.query(updateApplication, applicationId, (err, result) => {
-      if (err) {
-        console.log(err);
-      }
-      console.log(result);
-    });
   });
 };
 
 exports.getEvaluationResults = (req, res) => {
   const id = req.session.accountId;
   const sql =
-    "SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-selection' AND job_posts.poster = ? GROUP BY evaluations.application_id;";
+    "SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-evaluation' AND job_posts.poster = ? AND evaluations.total != 'NULL' GROUP BY evaluations.application_id ORDER BY total DESC;";
   con.query(sql, id, (err, result) => {
     if (err) {
       console.log(err);
@@ -320,6 +353,17 @@ exports.getEvaluationResults = (req, res) => {
     res.send(result);
   });
 };
+exports.getEvaluationResultsForCommitteemember =(req, res)=>{
+  const id = req.session.accountId
+  const sql = `
+  SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-evaluation' AND evaluations.total != 'NULL' AND evaluations.evaluator = ${id}  GROUP BY evaluations.application_id ORDER BY total DESC;`
+    con.query(sql, id, (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send(result);
+    });
+}
 exports.getEvaluationResultsForCommitteeHead = (req, res) => {
   const id = req.session.accountId;
 
@@ -330,13 +374,11 @@ exports.getEvaluationResultsForCommitteeHead = (req, res) => {
       console.log(err);
     }
     const panelData = result[0];
-    console.log(result)
+    console.log(result);
 
     if (panelData) {
       const departmentType = panelData.committee;
-      const sql2 =
-        "SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-selection' AND panels.departmentType = ? GROUP BY evaluations.application_id;";
-
+      const sql2 = `SELECT evaluations.id, CONCAT(applicants.firstname, ' ', applicants.middlename, ' ', applicants.lastname) as applicant_name, job_posts.title, panels.department, panels.departmentType, evaluations.recommendation, evaluations.remarks, evaluations.total FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'for-evaluation' AND panels.departmentType = ? AND evaluations.evaluator = ${id} GROUP BY evaluations.application_id ORDER BY total DESC;`
       con.query(sql2, departmentType, (err, result) => {
         if (err) {
           console.log(err);
