@@ -9,11 +9,41 @@ exports.getProfileDetails = (req, res) => {
   con.query(sql, [accountId], (err, result) => {
     if (err) {
       console.log(err);
-      res.sendStatus(500);
+      return res.sendStatus(500);
     }
     res.send(result[0]);
   });
 };
+exports.getPanelDetails = (req,res) => {
+  const id = req.params.id
+
+  const sql = `SELECT CONCAT(firstname, ' ', middlename, ' ', lastname) as fullname, departmentType, department, position FROM panels WHERE account_id = ?`
+
+  con.query(sql, id, (err, result)=>{
+    if(err){
+      console.log(err)
+      return req.sendStatus(500)
+    }
+    if(!result.length)return res.send(false)
+
+    res.send(result[0])
+  })
+}
+exports.getCommitteeDetails = (req,res) => {
+  const id = req.params.id
+
+  const sql = `SELECT CONCAT(firstname, ' ', middlename, ' ', lastname) as fullname, committee,position,account_id FROM committees WHERE account_id = ?`
+
+  con.query(sql, id, (err, result)=>{
+    if(err){
+      console.log(err)
+      return req.sendStatus(500)
+    }
+    if(!result.length)return res.send(false)
+
+    res.send(result[0])
+  })
+}
 exports.login = (req, res) => {
   const email = req.body.username;
   const password = req.body.password;

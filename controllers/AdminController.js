@@ -540,12 +540,13 @@ exports.getEvaluationData = (req, res) => {
 exports.getEvaluationResults = (req, res)=>{
   const sql = `SELECT 
   CONCAT(applicants.firstname,' ',applicants.middlename,' ',applicants.lastname) as applicant_name,
-  job_posts.title, panels.department, panels.departmentType, 
+  job_posts.title, panels.department, panels.departmentType,
+  applications.id, 
   SUM(evaluations.total) as total, 
   SUM(CASE WHEN evaluations.recommendation =  'Possible further consideration' THEN 1 END) as recom2,
   SUM(CASE WHEN evaluations.recommendation =  'Definitely to be considered' THEN 1 END) as recom1, 
   SUM(CASE WHEN evaluations.recommendation =  'Unfavorable' THEN 1 END) as recom3
-  FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE evaluations.total != 'NULL' GROUP BY applicants.account_id ORDER BY total DESC`
+  FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE evaluations.total != 'NULL' GROUP BY applications.id ORDER BY total DESC`
   con.query(sql,(err, result)=>{
     if(err){
       console.log(err)
@@ -553,7 +554,19 @@ exports.getEvaluationResults = (req, res)=>{
     res.send(result)
   })
 }
+exports.getPanelEvaluations = (req, res) => {
+  const applicationId = req.params.applicationId
 
+  const sql = `SELECT evaluations.id, evaluations.evaluator, accounts.type, date_format(evaluations.date,'%Y-m-d') as date, evaluations.total, evaluations.recommendation, evaluations.remarks FROM evaluations INNER JOIN accounts ON evaluations.evaluator = accounts.id WHERE evaluations.total != 'NULL' AND evaluations.application_id = ?;`
+
+  con.query(sql, applicationId, (err, result)=>{
+    if(err){
+      console.log(err)
+      res.sendStatus(500)
+    }
+    res.send(result)
+  })
+}
 exports.getAccounts = (req, res) => {
   const sql = "SELECT applicants.account_id, applicants.firstname, applicants.middlename, applicants.lastname, applicants.gender, applicants.age, date_format(applicants.birthday,'%Y-%m-%d') as birthday,applicants.contact, accounts.email, accounts.status FROM `accounts` INNER JOIN applicants ON accounts.id = applicants.account_id WHERE accounts.type = 'applicant'"
 

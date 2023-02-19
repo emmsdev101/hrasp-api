@@ -5,7 +5,7 @@ const router = express.Router()
 const uploader = require('../helper/uploader')
 
 const adminControlloer = require('./../controllers/AdminController')
-
+const panelController = require('./../controllers/PanelController')
 
 router.get('/', (req, res)=>{
     res.send("wellcome")
@@ -26,6 +26,10 @@ router.get("/getCommittees",(req, res)=>adminControlloer.getCommitees(req, res))
 router.get('/getEvaluationResults',adminControlloer.getEvaluationResults)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
 router.get("/getAccounts",adminControlloer.getAccounts)
+router.get("/getPanelEvaluations/:applicationId",adminControlloer.getPanelEvaluations)
+router.get("/getCommitteeDetails/:id", panelController.getCommitteeDetails)
+router.get("/getPanelDetails/:id",panelController.getPanelDetails)
+
 
 
 router.post('/setSchedule', adminControlloer.setSchedule)
