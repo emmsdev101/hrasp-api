@@ -573,8 +573,12 @@ exports.getEvaluationResults = (req, res)=>{
 exports.getPanelEvaluations = (req, res) => {
   const applicationId = req.params.applicationId
 
-  const sql = `SELECT evaluations.id, evaluations.evaluator, accounts.type, date_format(evaluations.date,'%Y-m-d') as date, evaluations.total, evaluations.recommendation, evaluations.remarks FROM evaluations INNER JOIN accounts ON evaluations.evaluator = accounts.id WHERE evaluations.total != 'NULL' AND evaluations.application_id = ?;`
+  const recommendation = req.params.recommendation
 
+  let sql = `SELECT evaluations.id, evaluations.evaluator, accounts.type, date_format(evaluations.date,'%Y-m-d') as date, evaluations.total, evaluations.recommendation, evaluations.remarks FROM evaluations INNER JOIN accounts ON evaluations.evaluator = accounts.id WHERE evaluations.total != 'NULL' AND evaluations.application_id = ? `
+
+  if(recommendation !== "All"){
+    sql += `AND evaluations.recommendation = '${recommendation}'`  }
   con.query(sql, applicationId, (err, result)=>{
     if(err){
       console.log(err)
