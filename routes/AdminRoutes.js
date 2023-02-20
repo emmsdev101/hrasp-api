@@ -23,12 +23,13 @@ router.get("/getApplicationDetails/:id", adminControlloer.getApplicationDetails)
 router.get("/getJobPositions", adminControlloer.getJobPositions)
 router.get("/getPanels",(req, res)=>adminControlloer.getPanels(req, res))
 router.get("/getCommittees",(req, res)=>adminControlloer.getCommitees(req, res))
-router.get('/getEvaluationResults',adminControlloer.getEvaluationResults)
+router.get('/getEvaluationResults/:type/:department/:position',adminControlloer.getEvaluationResults)
 router.get("/getEvaluationData/:id",adminControlloer.getEvaluationData)
 router.get("/getAccounts",adminControlloer.getAccounts)
 router.get("/getPanelEvaluations/:applicationId",adminControlloer.getPanelEvaluations)
 router.get("/getCommitteeDetails/:id", panelController.getCommitteeDetails)
 router.get("/getPanelDetails/:id",panelController.getPanelDetails)
+router.get("/getJobPositions/:type/:department", panelController.getJobPositions)
 
 
 

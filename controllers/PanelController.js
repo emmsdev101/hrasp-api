@@ -231,6 +231,19 @@ exports.getJobPositionsForDepartment = (req, res) => {
     res.send(result);
   });
 };
+exports.getJobPositions = (req, res)=>{
+  const type = req.params.type
+  const department = req.params.department
+  const sql = `SELECT job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.status = 'approved' AND panels.departmentType = ? and panels.department = ? GROUP BY job_posts.id`
+
+  con.query(sql, [type, department],(err, result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    res.send(result)
+  })
+}
 
 exports.getJobPositionsForCommittee = (req, res) => {
   const sql =

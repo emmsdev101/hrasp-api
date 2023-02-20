@@ -538,7 +538,11 @@ exports.getEvaluationData = (req, res) => {
     })
 }
 exports.getEvaluationResults = (req, res)=>{
-  const sql = `SELECT 
+  const type = req.params.type
+  const department = req.params.department
+  const position = req.params.position
+
+  let sql = `SELECT 
   CONCAT(applicants.firstname,' ',applicants.middlename,' ',applicants.lastname) as applicant_name,
   job_posts.title, panels.department, panels.departmentType,
   applications.id, 
@@ -546,7 +550,19 @@ exports.getEvaluationResults = (req, res)=>{
   SUM(CASE WHEN evaluations.recommendation =  'Possible further consideration' THEN 1 END) as recom2,
   SUM(CASE WHEN evaluations.recommendation =  'Definitely to be considered' THEN 1 END) as recom1, 
   SUM(CASE WHEN evaluations.recommendation =  'Unfavorable' THEN 1 END) as recom3
-  FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE evaluations.total != 'NULL' GROUP BY applications.id ORDER BY total DESC`
+  FROM evaluations INNER JOIN applications ON evaluations.application_id = applications.id INNER JOIN applicants ON applications.applicant_id = applicants.account_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE evaluations.total != 'NULL' `
+  
+  if(type !== "All"){
+    sql += ` AND panels.departmentType = '${type}'`
+  }
+  if(department !== "All"){
+    sql += ` AND panels.department = '${department}'`
+  }
+  if(position !== "All"){
+    sql += ` AND job_posts.title = '${position}'`
+  }
+
+  sql +=" GROUP BY applications.id ORDER BY total DESC"
   con.query(sql,(err, result)=>{
     if(err){
       console.log(err)
