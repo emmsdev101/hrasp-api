@@ -14,6 +14,19 @@ exports.getProfileDetails = (req, res) => {
     res.send(result[0]);
   });
 };
+exports.getCommitteeProfileDetails = (req, res) => {
+  const accountId = req.session.accountId;
+  let sql =
+    "SELECT committees.*, accounts.email FROM committees INNER JOIN accounts ON committees.account_id = accounts.id WHERE accounts.id = ?";
+
+  con.query(sql, [accountId], (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.sendStatus(500);
+    }
+    res.send(result[0]);
+  });
+};
 exports.getPanelDetails = (req,res) => {
   const id = req.params.id
 

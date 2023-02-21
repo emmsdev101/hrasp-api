@@ -1,6 +1,23 @@
 const dbConnection = require('./../config/DbConnection')
 
 const con = dbConnection.con
+
+
+exports.getProfileDetails = (req, res)=>{
+    const accountId = req.session.accountId
+
+    const sql = "SELECT accounts.email, applicants.* from applicants INNER JOIN accounts ON applicants.account_id = accounts.id WHERE accounts.id = ?"
+    con.query(sql, accountId,(err, result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        console.log(result[0])
+        if(!result[0])return res.send({})
+        return res.send(result[0])
+    })
+}
+
 exports.register = (req, res)=>{
     const userData = req.body.userData
 

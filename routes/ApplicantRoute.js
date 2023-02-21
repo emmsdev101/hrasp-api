@@ -11,7 +11,7 @@ router.get('/', (req, res)=>{
 })
 
 router.get("/getJobPosts", adminControlloer.getJobPosts)
-
+router.get("/getProfileDetails", applicantController.getProfileDetails)
 router.post('/upload-letter', uploader.upload('uploads/applicant/letters').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-tor', uploader.upload('uploads/applicant/tor').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-pds', uploader.upload('uploads/applicant/pds').array("files"),(req,res)=>uploader.getPathArray(req, res))

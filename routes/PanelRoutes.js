@@ -15,7 +15,8 @@ router.get("/getApplicants/:status", (req, res)=>panelController.getApplicants(r
 router.get("/getJobPositions/committee", panelController.getJobPositionsForCommittee)
 router.get("/getJobPositions/head", panelController.getJobPositionsForCommitteeHead)
 router.get("/getJobPositions/department", panelController.getJobPositionsForDepartment)
-
+router.get("/getProfileDetails",panelController.getProfileDetails)
+router.get("/getCommitteeProfileDetails",panelController.getCommitteeProfileDetails)
 
 router.get("/getApplicantsForCommitteeMember/:status", panelController.getApplicantsForCommitteeMember)
 router.get("/getApplicantsForCommitteeHead/:status", panelController.getApplicantsForCommitteeHeads)
