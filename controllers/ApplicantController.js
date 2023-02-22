@@ -6,7 +6,7 @@ const con = dbConnection.con
 exports.getProfileDetails = (req, res)=>{
     const accountId = req.session.accountId
 
-    const sql = "SELECT accounts.email, applicants.* from applicants INNER JOIN accounts ON applicants.account_id = accounts.id WHERE accounts.id = ?"
+    const sql = "SELECT accounts.email, applicants.firstname, applicants.middlename, applicants.lastname, applicants.gender, date_format(applicants.birthday,'%Y-%m-%d') as birthday, applicants.contact from applicants INNER JOIN accounts ON applicants.account_id = accounts.id WHERE accounts.id = ?"
     con.query(sql, accountId,(err, result)=>{
         if(err){
             console.log(err)
@@ -15,6 +15,49 @@ exports.getProfileDetails = (req, res)=>{
         console.log(result[0])
         if(!result[0])return res.send({})
         return res.send(result[0])
+    })
+}
+exports.changePassword = (req, res)=> {
+    const applicantId = req.session.accountId
+    const currentPassword=req.body.currentPassword
+    const newPassword=req.body.newPassword
+    const sql = "UPDATE accounts SET password = ? WHERE id = ? AND password = ? AND type = 'applicant'"
+
+    con.query(sql,[newPassword,applicantId, currentPassword],(err, result)=>{
+        if(err){
+            console.log(err)
+           return res.send({success:false, error:"Something went wrong"})
+        }
+        if(!result.affectedRows){
+            return res.send({success:false, error:"Current password is incorrect"})
+        }
+        res.send({success:true})
+    })
+}
+exports.editProfile = (req, res)=> {
+    const applicantId = req.session.accountId
+
+    const data = [
+       req.body.firstname,
+       req.body.middlename,
+       req.body.lastname,
+       req.body.gender,
+       req.body.birthday,
+       req.body.contact,
+       applicantId
+    ]
+    const sql ="UPDATE applicants SET firstname = ?, middlename = ?, lastname = ?, gender = ?, birthday = ?, contact = ?  WHERE account_id = ?"
+
+    con.query(sql,data,(err,result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        console.log(result)
+        if(result.affectedRows){
+            return res.send({success:true})
+        }
+        else return res.send({success:false})
     })
 }
 

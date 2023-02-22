@@ -10,6 +10,7 @@ const panelController = require('./../controllers/PanelController')
 router.get('/', (req, res)=>{
     res.send("wellcome")
 })
+router.post("/changePassword", adminControlloer.changePassword)
 router.post('/postJob', (req, res)=>adminControlloer.postJob(req, res))
 router.post('/upload', uploader.upload('uploads/admin/images/jobPosts').single('file'), (req, res)=>{
     adminControlloer.upload(req, res)

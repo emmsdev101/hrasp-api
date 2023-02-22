@@ -37,6 +37,23 @@ exports.postJob = (req, res) => {
     console.log(postData);
   });
 };
+exports.changePassword = (req, res)=> {
+  const applicantId = req.session.accountId
+  const currentPassword=req.body.currentPassword
+  const newPassword=req.body.newPassword
+  const sql = "UPDATE accounts SET password = ? WHERE id = ? AND password = ? AND type = 'admin'"
+
+  con.query(sql,[newPassword,applicantId, currentPassword],(err, result)=>{
+      if(err){
+          console.log(err)
+         return res.send({success:false, error:"Something went wrong"})
+      }
+      if(!result.affectedRows){
+          return res.send({success:false, error:"Current password is incorrect"})
+      }
+      res.send({success:true})
+  })
+}
 exports.getJobPosts = (req, res) => {
   const sql =
     "SELECT job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id ";

@@ -33,4 +33,7 @@ router.post("/cancel-request", panelController.cancelRequest)
 router.post("/acceptApplication", adminControlloer.acceptApplication)
 router.post("/createEvaluation",adminControlloer.createEvaluation)
 router.post("/evaluate",panelController.evaluate)
+router.post("/editProfile",panelController.editProfile)
+router.post("/editCommitteeProfile",panelController.editCommitteeProfile)
+router.post("/changePassword", panelController.changePassword)
 module.exports = router

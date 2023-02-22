@@ -12,14 +12,16 @@ router.get('/', (req, res)=>{
 
 router.get("/getJobPosts", adminControlloer.getJobPosts)
 router.get("/getProfileDetails", applicantController.getProfileDetails)
+
 router.post('/upload-letter', uploader.upload('uploads/applicant/letters').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-tor', uploader.upload('uploads/applicant/tor').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-pds', uploader.upload('uploads/applicant/pds').array("files"),(req,res)=>uploader.getPathArray(req, res))
 router.post('/upload-certs', uploader.upload('uploads/applicant/certs').array("files"),(req,res)=>uploader.getPathArray(req, res))
-
+router.post("/editProfile", applicantController.editProfile)
 router.post('/apply',(req, res)=>{
   applicantController.apply(req, res)
 })
+router.post("/changePassword",applicantController.changePassword)
 
 router.post("/register", (req, res)=>applicantController.register(req, res))
 router.post("/login", (req, res)=>applicantController.login(req, res))

@@ -14,6 +14,23 @@ exports.getProfileDetails = (req, res) => {
     res.send(result[0]);
   });
 };
+exports.changePassword = (req, res)=> {
+  const applicantId = req.session.accountId
+  const currentPassword=req.body.currentPassword
+  const newPassword=req.body.newPassword
+  const sql = "UPDATE accounts SET password = ? WHERE id = ? AND password = ?"
+
+  con.query(sql,[newPassword,applicantId, currentPassword],(err, result)=>{
+      if(err){
+          console.log(err)
+         return res.send({success:false, error:"Something went wrong"})
+      }
+      if(!result.affectedRows){
+          return res.send({success:false, error:"Current password is incorrect"})
+      }
+      res.send({success:true})
+  })
+}
 exports.getCommitteeProfileDetails = (req, res) => {
   const accountId = req.session.accountId;
   let sql =
@@ -27,6 +44,35 @@ exports.getCommitteeProfileDetails = (req, res) => {
     res.send(result[0]);
   });
 };
+exports.editProfile = (req, res) => {
+  const applicantId = req.session.accountId
+
+    const data = [
+       req.body.firstname,
+       req.body.middlename,
+       req.body.lastname,
+       req.body.gender,
+       applicantId
+    ]
+    const sql ="UPDATE applicants SET firstname = ?, middlename = ?, lastname = ?, gender = ?, birthday = ?, contact = ?  WHERE account_id = ?"
+
+    con.query(sql,data,(err,result)=>{
+        if(err){
+            console.log(err)
+            return res.sendStatus(500)
+        }
+        console.log(result)
+        if(result.affectedRows){
+            return res.send({success:true})
+        }
+        else return res.send({success:false})
+    })
+}
+exports.editCommitteeProfile = (req, res)=>{
+  
+}
+
+
 exports.getPanelDetails = (req,res) => {
   const id = req.params.id
 
