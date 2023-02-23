@@ -285,7 +285,7 @@ exports.addPanel = (req, res) => {
   const lastname = req.body.lastname;
   const email = req.body.email;
 
-  let sql = "INSERT INTO accounts (email, password, type) VALUES (?,?,?)";
+  let sql = "INSERT INTO accounts (email, password, type, status) VALUES (?,?,?,'active')";
   con.query(sql, [email, "hrasp", "panel"], (err, result) => {
     if (err) {
       res.sendStatus(500);
@@ -421,7 +421,7 @@ exports.addCommittee = (req, res) => {
   const lastname = req.body.lastname;
   const email = req.body.email;
 
-  let sql = "INSERT INTO accounts (email, password, type) VALUES (?,?,?)";
+  let sql = "INSERT INTO accounts (email, password, type,status) VALUES (?,?,?,'active')";
   con.query(sql, [email, "hrasp", "committee-" + position], (err, result) => {
     if (err) {
       res.sendStatus(500);
@@ -711,5 +711,38 @@ exports.deactivate = (req, res) => {
         sendSms(applicant.contact, message)
       }
     })
+  })
+}
+exports.getRequestVolume = (req, res) => {
+  const sql = `SELECT COUNT(*) as requests FROM accounts WHERE status = "pending" AND type = "applicant"`
+  con.query(sql,null,(err,result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    if(!result[0])return res.send({success:false})
+    res.send(result[0])
+  })
+}
+exports.getPendingVolume = (req, res) => {
+  const sql = `SELECT COUNT(*) as pending FROM applications INNER JOIN job_posts ON applications.job_id = job_posts.id WHERE applications.status = "pending"`
+  con.query(sql,null,(err,result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    if(!result[0])return res.send({success:false})
+    res.send(result[0])
+  })
+}
+exports.getApplicantsVolume = (req, res) => {
+  const sql = `SELECT COUNT(*) as num_applicants FROM applicants INNER JOIN applications ON applicants.account_id = applications.applicant_id INNER JOIN job_posts ON applications.job_id = job_posts.id`
+  con.query(sql,null,(err,result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    if(!result[0])return res.send({success:false})
+    res.send(result[0])
   })
 }

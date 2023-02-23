@@ -31,8 +31,9 @@ router.get("/getPanelEvaluations/:applicationId/:recommendation",adminControlloe
 router.get("/getCommitteeDetails/:id", panelController.getCommitteeDetails)
 router.get("/getPanelDetails/:id",panelController.getPanelDetails)
 router.get("/getJobPositions/:type/:department", panelController.getJobPositions)
-
-
+router.get("/getRequestVolume", adminControlloer.getRequestVolume)
+router.get("/getPendingVolume", adminControlloer.getPendingVolume)
+router.get("/getApplicantsVolume", adminControlloer.getApplicantsVolume)
 
 router.post('/setSchedule', adminControlloer.setSchedule)
 router.post('/resetSchedule', adminControlloer.resetSchedule)

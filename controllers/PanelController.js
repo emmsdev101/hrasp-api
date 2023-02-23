@@ -491,3 +491,77 @@ exports.getEvaluationResultsForCommitteeHead = (req, res) => {
     }
   });
 };
+exports.getApplicantsVolume = (req, res) => {
+  const accountId = req.session.accountId 
+  const sql = `SELECT COUNT(*) as num_applicants FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN job_posts ON applications.job_id = job_posts.id  WHERE job_posts.poster = ?`
+  con.query(sql,accountId,(err,result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    if(!result[0])return res.send({success:false})
+    res.send(result[0])
+  })
+}
+exports.getPendingVolume = (req, res) => {
+  const accountId = req.session.accountId 
+  const sql = `SELECT COUNT(*) as pending FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN job_posts ON applications.job_id = job_posts.id  WHERE applications.status = "pending" and job_posts.poster = ?`
+  con.query(sql,accountId,(err,result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    if(!result[0])return res.send({success:false})
+    res.send(result[0])
+  })
+}
+
+exports.getCommitteeHeadApplicantsVolume = (req, res) => {
+  const accountId = req.session.accountId 
+  
+  const sql2 = "SELECT * FROM committees WHERE account_id = ?"
+
+  con.query(sql2,accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    const data = result[0]
+
+    const sql3 = `SELECT COUNT(*) as num_applicants FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id  WHERE panels.departmentType = ?`
+    con.query(sql3,data.committee,(err,result)=>{
+      if(err){
+        console.log(err)
+        return res.sendStatus(500)
+      }
+      if(!result[0])return res.send({success:false})
+      res.send(result[0])
+    })
+
+  })
+
+}
+exports.getCommitteeHeadPendingVolume = (req, res) => {
+  const accountId = req.session.accountId 
+  
+  const sql2 = "SELECT * FROM committees WHERE account_id = ?"
+
+  con.query(sql2,accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+      return res.sendStatus(500)
+    }
+    const data = result[0]
+
+    const sql3 = `SELECT COUNT(*) as pending FROM accounts INNER JOIN applications ON accounts.id = applications.applicant_id INNER JOIN job_posts ON applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id  WHERE panels.departmentType = ? AND applications.status ='pending'`
+    con.query(sql3,data.committee,(err,result)=>{
+      if(err){
+        console.log(err)
+        return res.sendStatus(500)
+      }
+      if(!result[0])return res.send({success:false})
+      res.send(result[0])
+    })
+
+  })
+}
