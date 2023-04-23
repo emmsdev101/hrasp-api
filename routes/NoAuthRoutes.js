@@ -56,7 +56,7 @@ router.post("/verifyCode",(req, res)=>{
 
 })
 //router.get('/testEmail',sendMail)
-router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res))
+router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res, 'portal'))
 router.post("/admin-login", (req, res)=>adminControlloer.login(req, res))
 router.post("/panel-login", (req, res)=>panelController.login(req, res))
 

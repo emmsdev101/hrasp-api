@@ -54,10 +54,13 @@ exports.changePassword = (req, res)=> {
       res.send({success:true})
   })
 }
-exports.getJobPosts = (req, res) => {
-  const sql =
+exports.getJobPosts = (req, res, page) => {
+  let sql =
     "SELECT job_posts.*, panels.departmentType, panels.department FROM job_posts INNER JOIN panels ON job_posts.poster = panels.account_id ";
 
+    if(page){
+      sql = sql+" WHERE job_posts.status = 'approved'"
+    }
   con.query(sql, (err, result) => {
     if (err) {
       res.sendStatus(500);
@@ -110,18 +113,18 @@ exports.login = (req, res) => {
 };
 exports.getApplicants = (req, res) => {
   const status = req.params.status === "all" ? "" : req.params.status;
-
+  const accountId = req.session.accountId
   let sql =
-    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id ";
+    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType, IF(favourites.favourite_id IS NULL, 'no','yes') AS favourite FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id LEFT JOIN favourites ON (applications.id = favourites.application_id AND favourites.panel_id = ?)";
 
   if (status === "to-interview" || status === "for-evaluation") {
     sql =
-      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE applications.status = 'to-interview' GROUP BY applicants.account_id";
+      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%Y-%m-%d') as date, interview.time,interview.room_id, interview.status, panels.department, panels.departmentType, IF(favourites.favourite_id IS NULL, 'no','yes') AS favourite FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id INNER JOIN panels ON job_posts.poster = panels.account_id LEFT JOIN favourites ON (applications.id = favourites.application_id AND favourites.panel_id = ?) WHERE applications.status = 'to-interview' GROUP BY applicants.account_id";
   } else
     sql = status ? sql + " WHERE applications.status ='" + status + "'" : sql;
 
     console.log(sql)
-  con.query(sql, (err, result) => {
+  con.query(sql,accountId, (err, result) => {
     if (err) {
       console.log(err);
       return res.sendStatus(500);
@@ -744,5 +747,11 @@ exports.getApplicantsVolume = (req, res) => {
     }
     if(!result[0])return res.send({success:false})
     res.send(result[0])
+  })
+}
+
+exports.getPeerId=(req, res)=>{
+  res.send({
+    peerId:uuidv4()
   })
 }

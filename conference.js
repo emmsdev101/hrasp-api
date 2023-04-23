@@ -1,28 +1,18 @@
-const app = require('express')();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server,{
-    cors: {
-        origin: "*"
-      }
-});
-const port = process.env.PORT || 3001;
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
-server.listen(port, function() {
-  console.log(`Listening on port ${port}`);
+const app = express();
+
+// Create a proxy middleware function
+const proxy = createProxyMiddleware({
+  target: 'ws://localhost:7880',
+  changeOrigin: true,
 });
 
-io.on('connection', socket => {
+// Use the proxy middleware for all requests to /livekit
+app.use('/livekit', proxy);
 
-  socket.on('join-room', (roomId, userId) => {
-    socket.join(roomId)
-    socket.to(roomId).emit('user-connected', userId)
-      io.to(socket.id,"self-connected",socket.id)
-    console.log("user connected:"+socket.id)
-
-    socket.on('disconnect', () => {
-      socket.to(roomId).emit('user-disconnected', userId)
-    })
-  })
-})
-
-module.exports = app
+// Start the server
+app.listen(4001, () => {
+  console.log('Server listening on port 3000');
+});

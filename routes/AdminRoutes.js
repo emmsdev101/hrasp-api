@@ -6,6 +6,7 @@ const uploader = require('../helper/uploader')
 
 const adminControlloer = require('./../controllers/AdminController')
 const panelController = require('./../controllers/PanelController')
+const conferenceController = require('./../controllers/ConferenceController')
 
 router.get('/', (req, res)=>{
     res.send("wellcome")
@@ -15,9 +16,10 @@ router.post('/postJob', (req, res)=>adminControlloer.postJob(req, res))
 router.post('/upload', uploader.upload('uploads/admin/images/jobPosts').single('file'), (req, res)=>{
     adminControlloer.upload(req, res)
 } )
+router.get("/getFavourites", panelController.getFavourites)
 router.post("/acceptApplication", adminControlloer.acceptApplication)
-
-
+router.post("/addFavourite", panelController.addFavourite)
+router.get('/getConferenceToken/:room_id',conferenceController.generateAdminToken)
 router.get('/getJobPosts', (req, res)=>adminControlloer.getJobPosts(req, res))
 router.get("/getApplicants/:status", adminControlloer.getApplicants)
 router.get("/getApplicationDetails/:id", adminControlloer.getApplicationDetails)

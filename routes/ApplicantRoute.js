@@ -5,6 +5,10 @@ const uploader = require('./../helper/uploader')
 
 const applicantController = require('./../controllers/ApplicantController')
 const adminControlloer = require("./../controllers/AdminController")
+const conferenceController = require('./../controllers/ConferenceController')
+
+router.get('/getConferenceToken/:room_id/:fullname',conferenceController.generateUsersToken)
+
 
 router.get('/', (req, res)=>{
     res.send("Wellcome")

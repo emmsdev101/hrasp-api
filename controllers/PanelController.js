@@ -247,27 +247,29 @@ exports.getApplicants = (req, res) => {
 
   const accountId = req.session.accountId;
   let sql =
-    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id WHERE job_posts.poster = " +
+    "SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, panels.department, panels.departmentType, IF(favourites.favourite_id IS NULL, 'no','yes') AS favourite FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN panels ON job_posts.poster = panels.account_id LEFT JOIN favourites ON (applications.id = favourites.application_id AND favourites.panel_id = ?) WHERE job_posts.poster = " +
     accountId;
 
   if (status === "to-interview") {
     sql =
-      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time, interview.room_id, interview.status FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id WHERE applications.status = 'to-interview' AND job_posts.poster = " +
+      "SELECT DISTINCT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, job_posts.title, applications.status, applications.id as application_id, date_format(interview.date,'%m-%d-%Y') as date, interview.time, interview.room_id, interview.status, IF(favourites.favourite_id IS NULL, 'no','yes') AS favourite FROM `applicants` INNER JOIN applications on applicants.account_id = applications.applicant_id INNER JOIN job_posts on applications.job_id = job_posts.id INNER JOIN interview on applications.id = interview.application_id LEFT JOIN favourites ON (applications.id = favourites.application_id AND favourites.panel_id = ?) WHERE applications.status = 'to-interview' AND job_posts.poster = " +
       accountId +
       " GROUP BY applicants.account_id";
   } else if (status === "for-evaluation") {
     sql = `SELECT applicants.firstname, applicants.middlename, applicants.lastname, applicants.account_id, 
     job_posts.title, applications.status, applications.id as application_id, panels.department, 
-    panels.departmentType,date_format(interview.date,'%m-%d-%Y') as date, interview.time 
+    panels.departmentType,date_format(interview.date,'%m-%d-%Y') as date, interview.time,
+    IF(favourites.favourite_id IS NULL, 'no','yes') AS favourite 
     FROM applicants INNER JOIN applications on applicants.account_id = applications.applicant_id 
     INNER JOIN job_posts on applications.job_id = job_posts.id 
     INNER JOIN panels ON job_posts.poster = panels.account_id 
     INNER JOIN interview on applications.id = interview.application_id 
+    LEFT JOIN favourites ON (applications.id = favourites.application_id AND favourites.panel_id = ?) 
     WHERE job_posts.poster = '${accountId}' AND applications.id NOT IN 
     (SELECT evaluations.application_id FROM evaluations WHERE evaluations.evaluator = ${accountId});`;
   } else
     sql = status ? sql + " AND applications.status ='" + status + "'" : sql;
-  con.query(sql, (err, result) => {
+  con.query(sql, accountId,(err, result) => {
     if (err) {
       console.log(err);
       return res.sendStatus(500);
@@ -564,4 +566,62 @@ exports.getCommitteeHeadPendingVolume = (req, res) => {
     })
 
   })
+}
+exports.getFavourites = (req, res)=>{
+  const accountId = req.session.accountId
+
+  const sql = "SELECT * from favourites WHERE panel_id = ?"
+
+  con.query(sql, accountId,(err, result)=>{
+    if(err){
+      console.log(err)
+    }
+    res.send(result)
+  })
+}
+exports.addFavourite=(req, res)=>{
+  const accountId = req.session.accountId
+  const applicationId = req.body.applicationId
+  const existed = req.body.existed
+
+  if(existed){
+    const data = [
+      accountId,
+      applicationId
+    ]
+    
+    const sql = "DELETE FROM favourites where panel_id = ? AND application_id = ?"
+    con.query(sql,data,(err, result)=>{
+      if(err){
+        res.sendStatus(500)
+        return console.log(err)
+      }
+  
+      if(!result.affectedRows ){
+        return res.send({succes:false})
+      }
+  
+      return res.send({success:true})
+    })
+  }else{
+    const data = {
+      application_id:applicationId,
+      panel_id:accountId
+    }
+    
+    const sql = "INSERT INTO favourites SET ?"
+    con.query(sql,data,(err, result)=>{
+      if(err){
+        res.sendStatus(500)
+        return console.log(err)
+      }
+  
+      if(!result.insertId){
+        return res.send({succes:false})
+      }
+  
+      return res.send({success:true})
+    })
+  }
+
 }

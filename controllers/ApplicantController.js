@@ -69,52 +69,59 @@ exports.register = (req, res)=>{
         password:userData.password,
         type:"applicant"
     }
-    con.query("INSERT INTO accounts SET ?", accountData, (err, accountResult)=>{
-        if(err){
-            res.send(err)
-            throw err
+    con.connect(function (err) {
+        if (err) {
+          console.log("error")
         }
-        if(accountResult.affectedRows < 1){
-            res.send({
-                status:"insert-failed"
-            })
-            console.log("Account not inserted")
-            return 0
-        }
-        console.log("Account:",accountResult)
-
-        const accoutId = accountResult.insertId
-
-        const toInsert = {
-            account_id:accoutId,
-            firstname: userData.firstname,
-            middlename: userData.middlename,
-            lastname: userData.lastname,
-            gender: userData.gender,
-            age:userData.age,
-            birthday:userData.birthDay,
-            contact: userData.contact
-        }
-
-        con.query("INSERT INTO applicants SET ?", toInsert, (err1, applicantResult)=>{
-            if(err1){
-                res.sendStatus(500)
-                throw err1
+        
+        con.query("INSERT INTO accounts SET ?", accountData, (err, accountResult)=>{
+            if(err){
+                res.send(err)
+                throw err
             }
-            console.log("Applicant Result:",applicantResult)
-            if(applicantResult.affectedRows < 0){
+            if(accountResult.affectedRows < 1){
                 res.send({
                     status:"insert-failed"
                 })
-                console.log("Applicant not inserted")
+                console.log("Account not inserted")
                 return 0
             }
-            res.send({
-                status:"success"
-            })
+            console.log("Account:",accountResult)
     
+            const accoutId = accountResult.insertId
+    
+            const toInsert = {
+                account_id:accoutId,
+                firstname: userData.firstname,
+                middlename: userData.middlename,
+                lastname: userData.lastname,
+                gender: userData.gender,
+                age:userData.age,
+                birthday:userData.birthDay,
+                contact: userData.contact
+            }
+    
+            con.query("INSERT INTO applicants SET ?", toInsert, (err1, applicantResult)=>{
+                if(err1){
+                    res.sendStatus(500)
+                    throw err1
+                }
+                console.log("Applicant Result:",applicantResult)
+                if(applicantResult.affectedRows < 0){
+                    res.send({
+                        status:"insert-failed"
+                    })
+                    console.log("Applicant not inserted")
+                    return 0
+                }
+                res.send({
+                    status:"success"
+                })
+        
+            })
         })
-    })
+      });
+   
 
 
 }
